@@ -1,0 +1,370 @@
+{
+  "@context": {
+    "@language": "en",
+    "@vocab": "https://schema.org/",
+    "citeAs": "cr:citeAs",
+    "column": "cr:column",
+    "conformsTo": "dct:conformsTo",
+    "cr": "http://mlcommons.org/croissant/",
+    "rai": "http://mlcommons.org/croissant/RAI/",
+    "data": {
+      "@id": "cr:data",
+      "@type": "@json"
+    },
+    "dataType": {
+      "@id": "cr:dataType",
+      "@type": "@vocab"
+    },
+    "dct": "http://purl.org/dc/terms/",
+    "examples": {
+      "@id": "cr:examples",
+      "@type": "@json"
+    },
+    "extract": "cr:extract",
+    "field": "cr:field",
+    "fileProperty": "cr:fileProperty",
+    "fileObject": "cr:fileObject",
+    "fileSet": "cr:fileSet",
+    "format": "cr:format",
+    "includes": "cr:includes",
+    "isLiveDataset": "cr:isLiveDataset",
+    "jsonPath": "cr:jsonPath",
+    "key": "cr:key",
+    "md5": "cr:md5",
+    "parentField": "cr:parentField",
+    "path": "cr:path",
+    "recordSet": "cr:recordSet",
+    "references": "cr:references",
+    "regex": "cr:regex",
+    "repeated": "cr:repeated",
+    "replace": "cr:replace",
+    "sc": "https://schema.org/",
+    "separator": "cr:separator",
+    "source": "cr:source",
+    "subField": "cr:subField",
+    "transform": "cr:transform"
+  },
+  "@type": "sc:Dataset",
+  "name": "BookSORT",
+  "description": "A dataset created from Project Gutenberg books for evaluation on the Sequence Order Recall Task (SORT) at different text excerpt lengths, segment pair lengths, and distances between segment pairs.",
+  "conformsTo": "http://mlcommons.org/croissant/1.0",
+  "citeAs": "placeholder",
+  "license": {
+    "@type": "sc:CreativeWork",
+    "@id": "CreativeCommons0",
+    "name": "CreativeCommons0",
+    "url": "https://creativecommons.org/public-domain/cc0/"
+  },
+  "rai:dataBiases": "All of the books are English language books, and we did not include any that were translated from other languages. The books are also from a specific time window. Both factors mean that the semantic content of the dataset has some cultural biases. SORT, the intended evaluation task over the books, is agnostic to the specific content of the sequence. However, models evaluated on BookSORT may perform slightly better on the task if their training data contain similar cultural knowledge or biases to the content of the books.",
+  "rai:dataCollection": "The dataset is entirely constructed from English language books in the public domain in the United States, shared via [Project Gutenberg](https://gutenberg.org/). We manually selected the first title to use in a companion study with human participants (see publication link). For the remaining 8 books, we first downloaded Project Gutenberg metadata. We then filtered this metadata to only view books released in 2024, and originally published in 1928 (thus passing the 95 year mark for copyright to expire). Titles were selected to attempt to maximize diversity over the Library of Congress Classification (LoCC), and to have some range in subject matter and book length. These filtered titles were then examined to check that they contained a continuous narrative across the entire book (i.e. not collections of stories or poems), and were therefore appropriate for the SORT task.",
+  "rai:personalSensitiveInformation": "The books in the dataset do not contain sensitive personal information. Most of the works are fiction, and all of the information is already in the public domain.",
+  "url": "placeholder",
+  "version": "1.0.0",
+  "distribution": [
+    {
+      "@type": "cr:FileObject",
+      "@id": "data_folder",
+      "name": "data_folder",
+      "description": "BookSORT data files",
+      "contentUrl": "/home/vyvo/projects/narrativememory-dev/recency_judgements/croissant_data/",
+      "encodingFormat": "git+https",
+      "sha256": "main"
+    },
+    {
+      "@type": "cr:FileSet",
+      "@id": "excerpt-csv",
+      "name": "excerpt-csv",
+      "description": "CSV files in the data repository",
+      "containedIn": {
+        "@id": "data_folder"
+      },
+      "encodingFormat": "text/csv",
+      "includes": "excerpts*.csv"
+    },
+    {
+      "@type": "cr:FileSet",
+      "@id": "book-csv",
+      "name": "book-csv",
+      "description": "CSV files in the data repository",
+      "containedIn": {
+        "@id": "data_folder"
+      },
+      "encodingFormat": "text/csv",
+      "includes": "books*.csv"
+    },
+    {
+      "@type": "cr:FileSet",
+      "@id": "segment-csv",
+      "name": "segment-csv",
+      "description": "CSV files in the data repository",
+      "containedIn": {
+        "@id": "data_folder"
+      },
+      "encodingFormat": "text/csv",
+      "includes": "segments*.csv"
+    }
+  ],
+  "recordSet": [
+    {
+      "@type": "cr:RecordSet",
+      "@id": "books",
+      "name": "books",
+      "field": [
+        {
+          "@type": "cr:Field",
+          "@id": "book_idx",
+          "name": "book_idx",
+          "description": "PG book ID",
+          "dataType": "sc:Integer",
+          "source": {
+            "fileSet": {
+              "@id": "book-csv"
+            },
+            "extract": {
+              "column": "book_idx"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "book_title",
+          "name": "book_title",
+          "description": "Book title",
+          "dataType": "sc:Text",
+          "source": {
+            "fileSet": {
+              "@id": "book-csv"
+            },
+            "extract": {
+              "column": "book_title"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "book_num_words",
+          "name": "book_num_words",
+          "description": "Number of words in specific book",
+          "dataType": "sc:Integer",
+          "source": {
+            "fileSet": {
+              "@id": "book-csv"
+            },
+            "extract": {
+              "column": "num_words"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "@type": "cr:RecordSet",
+      "@id": "excerpts",
+      "name": "excerpts",
+      "field": [
+        {
+          "@type": "cr:Field",
+          "@id": "ex_book_idx",
+          "name": "ex_book_idx",
+          "description": "Excerpt index unique within each book",
+          "dataType": "sc:Integer",
+          "source": {
+            "fileSet": {
+              "@id": "excerpt-csv"
+            },
+            "extract": {
+              "column": "book_idx"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "excerpt_idx",
+          "name": "excerpt_idx",
+          "description": "Excerpt index unique within each book",
+          "dataType": "sc:Integer",
+          "source": {
+            "fileSet": {
+              "@id": "excerpt-csv"
+            },
+            "extract": {
+              "column": "excerpt_idx"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "excerpt_pos",
+          "name": "excerpt_pos",
+          "description": "Position index of excerpt as a proportion of number of words in the book",
+          "dataType": "sc:Float",
+          "source": {
+            "fileSet": {
+              "@id": "excerpt-csv"
+            },
+            "extract": {
+              "column": "excerpt_pos"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "excerpt_text",
+          "name": "excerpt_text",
+          "description": "Full text of the book excerpt",
+          "dataType": "sc:Text",
+          "source": {
+            "fileSet": {
+              "@id": "excerpt-csv"
+            },
+            "extract": {
+              "column": "excerpt_text"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "@type": "cr:RecordSet",
+      "@id": "segments",
+      "name": "segments",
+      "field": [
+        {
+          "@type": "cr:Field",
+          "@id": "seg_book_idx",
+          "name": "seg_book_idx",
+          "description": "Excerpt index unique within each book",
+          "dataType": "sc:Integer",
+          "source": {
+            "fileSet": {
+              "@id": "segment-csv"
+            },
+            "extract": {
+              "column": "book_idx"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "seg_excerpt_idx",
+          "name": "seg_excerpt_idx",
+          "description": "Excerpt index unique within each book",
+          "dataType": "sc:Integer",
+          "source": {
+            "fileSet": {
+              "@id": "segment-csv"
+            },
+            "extract": {
+              "column": "excerpt_idx"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "segment_idx",
+          "name": "segment_idx",
+          "description": "Segment index unique within each excerpt. Currently always 0 since there is only one per excerpt",
+          "dataType": "sc:Integer",
+          "source": {
+            "fileSet": {
+              "@id": "segment-csv"
+            },
+            "extract": {
+              "column": "segment_idx"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "segment_1",
+          "name": "segment_1",
+          "description": "Full text of segment that appears first in the excerpt",
+          "dataType": "sc:Text",
+          "source": {
+            "fileSet": {
+              "@id": "segment-csv"
+            },
+            "extract": {
+              "column": "segment_1"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "segment_2",
+          "name": "segment_2",
+          "description": "Full text of segment that appears last in the excerpt",
+          "dataType": "sc:Text",
+          "source": {
+            "fileSet": {
+              "@id": "segment-csv"
+            },
+            "extract": {
+              "column": "segment_2"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "seg1_pos",
+          "name": "seg1_pos",
+          "description": "Position index of segment_1 within the excerpt",
+          "dataType": "sc:Integer",
+          "source": {
+            "fileSet": {
+              "@id": "segment-csv"
+            },
+            "extract": {
+              "column": "seg1_pos"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "seg2_pos",
+          "name": "seg2_pos",
+          "description": "Position index of segment_2 within the excerpt",
+          "dataType": "sc:Integer",
+          "source": {
+            "fileSet": {
+              "@id": "segment-csv"
+            },
+            "extract": {
+              "column": "seg2_pos"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "distance_bin",
+          "name": "distance_bin",
+          "description": "Distance bin label (right edge of bin) given abs(seg1_pos - seg2_pos)",
+          "dataType": "sc:Integer",
+          "source": {
+            "fileSet": {
+              "@id": "segment-csv"
+            },
+            "extract": {
+              "column": "distance_bin"
+            }
+          }
+        },
+        {
+          "@type": "cr:Field",
+          "@id": "present_seg1_first",
+          "name": "present_seg1_first",
+          "description": "Whether or not to present segment_1 first in SORT evaluation",
+          "dataType": "sc:Integer",
+          "source": {
+            "fileSet": {
+              "@id": "segment-csv"
+            },
+            "extract": {
+              "column": "present_seg1_first"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
