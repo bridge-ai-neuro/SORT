@@ -6,30 +6,27 @@ SORT presents models with two segments of text from a continuous sequence, like 
 #### Dataset Link
 <!-- info: Provide a link to the dataset: -->
 <!-- width: half -->
-Dataset Link
+[TODO Dataset Link](TODOLINK)
 
+<!--- FILL IN AFTER SUBMISSION -->
 #### Data Card Author(s)
 <!-- info: Select **one role per** Data Card Author:
-
 (Usage Note: Select the most appropriate choice to describe the author's role
 in creating the Data Card.) -->
 <!-- width: half -->
-- **Name, Team:** (Owner / Contributor / Manager)
-- **Name, Team:** (Owner / Contributor / Manager)
 - **Name, Team:** (Owner / Contributor / Manager)
 
 ## Authorship
 ### Publishers
 #### Publishing Organization(s)
 <!-- scope: telescope -->
-<!-- info: Provide the names of the institution or organization responsible
-for publishing the dataset: -->
+<!-- info: Provide the names of the institution or organization responsible for publishing the dataset: -->
 Organization Name
 
 #### Industry Type(s)
 <!-- scope: periscope -->
-<!-- info: Select **all applicable** industry types to which the publishing
-organizations belong: -->
+<!-- info: Select **all applicable** industry types to which the publishing organizations belong: -->
+<!--- FILL IN AFTER SUBMISSION
 - Corporate - Tech
 - Corporate - Non-Tech (please specify)
 - Academic - Tech
@@ -38,15 +35,18 @@ organizations belong: -->
 - Not-for-profit - Non-Tech (please specify)
 - Individual (please specify)
 - Others (please specify)
+-->
 
 #### Contact Detail(s)
 <!-- scope: microscope -->
 <!-- info: Provide publisher contact details: -->
+<!--- FILL IN AFTER SUBMISSION
 - **Publishing POC:** Provide the name for a POC for this dataset's publishers
 - **Affiliation:** Provide the POC's institutional affiliation
 - **Contact:** Provide the POC's contact details
 - **Mailing List:** Provide a mailing list if available
 - **Website:** Provide a website for the dataset if available
+-->
 
 ### Dataset Owners
 #### Team(s)
@@ -57,21 +57,19 @@ Name of Group or Team
 #### Contact Detail(s)
 <!-- scope: periscope -->
 <!-- info: Provide pathways to contact dataset owners: -->
+<!--- FILL IN AFTER SUBMISSION
 - **Dataset Owner(s):** Provide the names of the dataset owners
 - **Affiliation:** Provide the affiliation of the dataset owners
 - **Contact:** Provide the email of the dataset owner
 - **Group Email:** Provide a link to the mailing-list@server.com for the dataset owner team
 - **Website:** Provide a link to the website for the dataset owner team
+-->
 
 #### Author(s)
 <!-- scope: microscope -->
 <!-- info: Provide the details of all authors associated with the dataset:
-
 (Usage Note: Provide the affiliation and year if different from publishing
 institutions or multiple affiliations.) -->
-- Name, Title, Affiliation, YYYY
-- Name, Title, Affiliation, YYYY
-- Name, Title, Affiliation, YYYY
 - Name, Title, Affiliation, YYYY
 
 ### Funding Sources
@@ -79,15 +77,12 @@ institutions or multiple affiliations.) -->
 <!-- scope: telescope -->
 <!-- info: Provide the names of the funding institution(s): -->
 - Name of Institution
-- Name of Institution
-- Name of Institution
 
 #### Funding or Grant Summary(ies)
 <!-- scope: periscope -->
 <!-- width: full -->
 <!-- info: Provide a short summary of programs or projects that may have funded
 the creation, collection, or curation of the dataset.
-
 Use additional notes to capture any other relevant information or
 considerations. -->
 *For example, Institution 1 and institution 2 jointly funded this dataset as a
@@ -96,13 +91,13 @@ the years YYYY-YYYY.*
 
 Summarize here. Link to documents if available.
 
-**Additional Notes:** Add here
-
 ## Dataset Overview
 
 The dataset consists of text samples and metadata from 9 public domain books from Project Gutenberg.
 
-To evaluate text on the Sequence Order Recall Task (SORT), we extracted text excerpts $E$ and pairs of text segments $S$ contained within those excerpts. As detailed in the accompanying paper, BookSORT varied the length of the text excerpts $L_E$, the length of the segments $L_S$, and the distance between the segments $D_S$. All units of length and distance are computed in words. Each unique combination of excerpt lengths $L_E$ and segment lengths $L_S$ produced 3 `.csv` files containing (1) information about the included books, (2) information about the excerpts from those books, and (3) information about the segments from those excerpts.
+To evaluate text on the Sequence Order Recall Task (SORT), we extracted text excerpts $E$ and pairs of text segments $S$ contained within those excerpts. As detailed in the accompanying paper, BookSORT varied the length of the text excerpts $L_E$, the length of the segments $L_S$, and the distance between the segments $D_S$. All excerpts and segments began at a sentence boundary, and units of length and distance are computed in words.
+
+Each unique combination of excerpt lengths $L_E$ and segment lengths $L_S$ produced 3 `.csv` files containing (1) information about the included books, (2) information about the excerpts from those books, and (3) information about the segments from those excerpts.
 
 Since we evaluated LLMs with varying maximum context windows, we constructed a dataset for fairly standard context length limits (providing text excerpts up to 2500 words to fit within 4096 tokens) and for extended context length limits (providing 10K-20K word excerpts).
 
@@ -128,19 +123,20 @@ Within each unique book excerpt, we sampled segment pairs with varying distances
 | Condition               | Minimum | Bin0      | Bin1      | Bin2      | Bin3        |
 |-------------------------|---------|-----------|-----------|-----------|-------------|
 | Standard Context Length | $L_S$   | $L_E / 4$ | $L_E / 3$ | $L_E / 2$ | $L_E / 0.8$ |
-| Extended Context Length | $L_S$   | 1000      | $L_E / 4$ | $L_E / 2$ | $L_E / 0.8$ |
+| Extended Context Length | $L_S$   | $1000$    | $L_E / 4$ | $L_E / 2$ | $L_E / 0.8$ |
 
-**Above:** The definition of the segment distance bins that determine how far apart the text segments are from one another. 
+**Above:** The definition of the segment distance bins that determine how far apart the text segments are from one another. Distance is defined by the beginning of the first segment to the beginning of the second segment.
+
+We only evaluated the Sequence Order Recall Task on the first 100 segment pairs in each combination of book, $L_E$, $L_S$, and $L_D$. The remaining pairs are reserved for other uses (e.g. selecting which prompt format produces the best SORT results).
 
 A complete description of the data fields is given in the BookSORT metadata following the MLCroissant 1.0 specification. [TODOLINK](TODOLINK)
-
-[TODO] Include Table of the book metadata
-
-**Above:** Information about the books included in the dataset. 
 
 #### Data Subject(s)
 <!-- scope: telescope -->
 <!-- info: Select ***all applicable**** subjects contained the dataset: -->
+
+The content of the books contains the following:
+
 - Non-Sensitive Data about people
 - Data about natural phenomena
 - Data about places and objects
@@ -222,13 +218,9 @@ out for, or other relevant information or considerations. -->
 ```
 @article{placeholder,
   title={placeholder},
-  author={Kuznetsova, Alina and Rom, Hassan and Alldrin, and others},
-  journal={International Journal of Computer Vision},
-  volume={128},
-  number={7},
-  pages={1956--1981},
+  author={Last, First and Last, First and others},
+  conference={placeholder},
   year={2020},
-  publisher={Springer}
 }
 ```
 
@@ -252,7 +244,6 @@ dataset: -->
 <!-- scope: telescope -->
 <!-- info: Select **all applicable** methods used to collect data: -->
 - API
-- Taken from other existing datasets
 
 #### Methodology Detail(s)
 <!-- scope: periscope -->
@@ -265,13 +256,11 @@ considerations.
 type.) -->
 **Collection Type**
 
-**Source:** Describe here. Include links where available.
-
-**Platform:** [Platform Name], Describe platform here. Include links where relevant.
+**Source:** The full text of the books are taken from [https://gutenberg.org/](https://gutenberg.org/). 
 
 **Is this source considered sensitive or high-risk?** No
 
-**Dates of Collection:** [MMM YYYY - MMM YYYY]
+**Dates of Collection:** [01 2022 - 03 2024]
 
 **Primary modality of collection data:** Text Data
 
@@ -283,7 +272,20 @@ type.) -->
 
 Use additional notes to capture any other relevant information or
 considerations. -->
-- **Source:** Describe here. Include links, data examples, metrics, visualizations where relevant.
+
+| ID    | Title                              | Author                             | Word count | Release   | Pub  | LoCC | Subjects                                                                                                            |
+|-------|------------------------------------|------------------------------------|------------|-----------|------|----------------------|---------------------------------------------------------------------------------------------------------------------|
+| 69087 | The Murder of Roger Ackroyd        | Christie, Agatha                   | 69,720     | 10/2/2022 | 1926 | PR                   | Detective and mystery stories; Fiction: Private investigators - England, Murder - Investigation, Belgians - England |
+| 72578 | Tom Swift and His Talking Pictures | Appleton, Victor                   | 43,853     | 1/1/2024  | 1928 | PZ                   | Adventure stories; Motion pictures                                                                                  |
+| 72600 | The Trumpeter of Krakow            | Kelly, Eric Philbrook              | 59,081     | 1/2/2024  | 1928 | PZ                   | Juvenile fiction: Middle Ages, Poland - History - Casimir IV, 1447-1492                                             |
+| 72869 | Meet the Tiger                     | Charteris, Leslie                  | 79,946     | 2/4/2024  | 1928 | PR                   | Fiction: Private investigators - England; Detective and mystery stories                                             |
+| 72958 | Hunting for Hidden Gold            | Dixon, Franklin W.                 | 42,354     | 2/14/2024 | 1928 | PZ                   | Juvenile fiction: Brothers, Gold mines and mining, Montana, Robbers and outlaws; Mystery and detective stories      |
+| 72963 | The Nature of the Physical World   | Eddington, Arthur Stanley, Sir     | 104,530    | 2/15/2024 | 1928 | Q                    | Physics - Philosophy; Science - Philosophy                                                                          |
+| 72972 | Money for Nothing                  | Wodehouse, P.G. (Pelham Grenville) | 82,331     | 2/16/2024 | 1928 | PR                   | Humorous stories; Fiction: Swindlers and swindling, Greed                                                           |
+| 73017 | Pomona; or, the Future of English  | De Selincourt, Basil               | 9,273      | 2/22/2024 | 1928 | PE                   | English language                                                                                                    |
+| 73042 | The Well of Loneliness             | Hall, Radclyffe                    | 163,217    | 2/26/2024 | 1928 | PR                   | Fiction: Lesbians - England - Social conditions                                                                     |
+
+**Above:** Project Gutenberg metadata for the books in this dataset.
 
 #### Data Processing
 <!-- scope: microscope -->
@@ -295,15 +297,9 @@ relevant information or considerations.
 
 (Usage Note: Duplicate and complete the following for each source OR
 collection method.) -->
-**Collection Method or Source**
+**Preprocessing text**
 
-**Description:** Describe here. Include links where relevant.
-
-**Methods employed:** Describe here. Include links where relevant.
-
-**Tools or libraries:** Describe here. Include links where relevant.
-
-**Additional Notes:** Add here
+**Description:** We wrote custom Python code to only retain the book text that formed a continuous narrative. We stripped the front and back matter of the book, and extracted chapter titles if they existed. 8 of the 9 books contained individual section or chapter breaks. For these 8 books, we parsed the text corresponding to each chapter. Chapter titles or section headings (e.g. 'VI' to indicate section six) were removed, and all remaining text was concatenated. This string was split into words (assuming simple whitespace separators with python `string.split()`) to produce a final text array for each book. This text array was sampled for the BookSORT dataset.
 
 ### Collection Criteria
 #### Data Selection
@@ -312,19 +308,7 @@ collection method.) -->
 
 Use additional notes to capture any other relevant information or
 considerations. -->
-- **Collection Method of Source:** Summarize data selection criteria here. Include links where available.
-
-**Additional Notes:** Add here
-
-#### Data Inclusion
-<!-- scope: periscope -->
-<!-- info: Summarize the data inclusion criteria.
-
-Use additional notes to capture any other relevant information or
-considerations. -->
-- **Collection Method of Source:** Summarize data inclusion criteria here. Include links where available.
-
-**Additional Notes:** Add here
+- **Book selection:** We followed Project Gutenberg [guidelines](https://gutenberg.org/policy/robot_access.html) for crawling the site. First we downloaded a catalog of book metadata. We filtered this metadata to only view books released in 2024, and originally published in 1928 (thus passing the 95 year mark for copyright to expire). Titles were manually selected to attempt to maximize diversity over the Library of Congress Classification (LoCC), and to have some range in subject matter and book length. These filtered titles were then examined to check that they contained a continuous narrative across the entire book (i.e. not collections of stories or poems), and were therefore appropriate for the SORT evaluation.  
 
 ### Use in ML or AI Systems
 #### Dataset Use(s)
@@ -332,52 +316,6 @@ considerations. -->
 <!-- info: Select **all applicable** -->
 - Testing
 - Validation
-
-#### Distribution(s)
-<!-- scope: periscope -->
-<!-- info: Describe the recommended splits and corresponding criteria.
-
-Use additional notes to capture any other
-relevant information or considerations. -->
-
-Set | Number of data points
---- | ---
-Train | 62,563
-Test | 62,563
-Validation | 62,563
-Dev | 62,563
-
-**Above:** Provide a caption for the above table or visualization.
-
-**Additional Notes:** Add here
-
-#### Library(ies) and Method(s) Used
-<!-- scope: microscope -->
-<!-- info: Provide a description of the methods
-used to transform or process the
-dataset.
-
-Use additional notes to capture any
-other relevant information or
-considerations.
-
-(Usage Note: Duplicate and complete
-the following for each transformation
-type applied.) -->
-**Transformation Type**
-
-**Method:** Describe the transformation
-method here. Include links where
-necessary.
-
-**Platforms, tools, or libraries:**
-- Project Gutenberg metadata: Write description here
-- Platform, tool, or library: Write description here
-
-**Transformation Results:** Full text, arrays with chapter titles stripped 
-
-### Breakdown of Transformations
-<!-- info: Fill out relevant rows. -->
 
 ## Sampling Methods
 <!-- info: Fill out the following block if your dataset employs any sampling
@@ -388,45 +326,9 @@ methods. -->
 dataset: -->
 - Multi-stage Sampling
 - Random Sampling
-- Stratified Sampling
 
-#### Characteristic(s)
-<!-- scope: periscope -->
-<!-- info: Provide characteristics of each sampling
-method used.
-
-Use additional notes to capture any other
-relevant information or considerations.
-
-(Usage Note: Duplicate and complete the
-following for each sampling method
-used.) -->
-**(Sampling Type)** | **Number**
---- | ---
-Upstream Source | Write here
-Total data sampled | 123m
-Sample size | 123
-Threshold applied | 123k units at property
-Sampling rate | 123
-Sample mean | 123
-Sample std. dev | 123
-Sampling distribution | 123
-Sampling variation | 123
-Sample statistic | 123
-
-**Above:** Provide a caption for the above table or visualization.
-
-**Additional Notes:** Add here
-
-#### Sampling Criteria
-<!-- scope: microscope -->
-<!-- info: Describe the criteria used to sample data from
-upstream sources.
-
-Use additional notes to capture any other
-relevant information or considerations. -->
-- **Sampling method:** Summarize here. Include links where applicable.
-
+The text excerpts and segments are all sampled from randomly and uniformly from across the text. Since we required all of these to begin at a sentence boundary, we first found all the relevant sentence boundaries and sampled uniformly from this set. Specific details can be found in the release of the dataset creation code [here](TODOLINK).
+ 
 ## Known Applications & Benchmarks
 <!-- info: Fill out the following section if your dataset was primarily
 created for use in AI or ML system(s) -->
@@ -444,8 +346,9 @@ considerations.
 (Usage Note: Duplicate and complete the
 following for each model.) -->
 A thorough report on evaluation can be found in the original accompanying [paper](TODOLINK).
-We evaluated [TODO] MODEL-LIST.
+This report evaluated several state-of-the-art LLMs across different families: Mistral, Mixtral (Mixture of Experts models), Llama-2, Llama-3, Gemma, and OpenAI GPT models.
 
+<!---
 ## Terms of Art
 ### Concepts and Definitions referenced in this Data Card
 <!-- info: Use this space to include the expansions and definitions of any
@@ -454,6 +357,7 @@ Use standard definitions where possible. Include the source of the definition
 where indicated. If you are using an interpretation,
 adaptation, or modification of the standard definition for the purposes of your
 Data Card or dataset, include your interpretation as well. -->
+<!---
 #### Term of Art
 Definition: Write here
 
@@ -467,4 +371,4 @@ Definition: Write here
 Source: Write here and share link
 
 Interpretation: Write here
-
+--> -->
