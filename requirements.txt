@@ -13,3 +13,7 @@ openai==1.18.0
 transformers
 matplotlib
 pylcs
+
+# OPTIONAL
+# if you want to run the included tests
+pytest
