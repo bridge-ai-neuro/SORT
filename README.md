@@ -1,4 +1,4 @@
-# Sequence Order Recall Task (SORT) Benchmark
+# Sequence Order Recall Task (SORT) Evaluation Framework
 
 SORT is a first-of-a-kind benchmark to test the episodic-memory capabilities of models.
 This goal is achieved by adapting recency judgments in cognitive psychology to evaluate episodic memory in humans and 
@@ -12,12 +12,6 @@ Memory (LTM) condition it is given ahead of time, e.g., at training, at fine-tun
 ## Book-SORT dataset
 As part of this benchmark, we include the `Book-SORT` dataset. This dataset implements both STM and LTM conditions for
 a set of 9 public domain books. 
-
-## Leaderboard
-
-### STM condition
-
-### LTM contidion
 
 
 ## Citation
