@@ -1,0 +1,5 @@
+name: "prompt_12.yaml"
+system_prompt: "You are a helpful, respectful and honest assistant. Please only answer A or B."
+pre_excerpt: "I need you to thoroughly read and comprehend this extract from the book <booktitle>. The passage is as follows: <excerpt>"
+post_excerpt: "Your task is to recall which text segment, either <label_list[0]> or <label_list[1]>, appeared <tasktype> in the book <booktitle>. Please read the segments carefully to remember in which order they appeared in <booktitle> and respond with either <label_list[0]> or <label_list[1]>: <segments> Which of these, <label_list[0]> or <label_list[1]>, was <tasktype> in the book <booktitle>?"
+model_answer_prefix: "Answer: Segment"
