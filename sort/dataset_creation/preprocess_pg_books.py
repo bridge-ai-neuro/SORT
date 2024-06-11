@@ -131,8 +131,8 @@ def save_book_data(book_path, text_path):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--full_text_path', type=str, default='../data/pg/full_text')
-    parser.add_argument('--output_path', type=str, default='../data/pg/text_arrays')
+    parser.add_argument('--full_text_path', type=str, default='../../data/pg/full_text')
+    parser.add_argument('--output_path', type=str, default='../../data/pg/text_arrays')
     args = parser.parse_args
 
     save_book_data(book_path=args.full_text_path, text_path=args.output_path)
