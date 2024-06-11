@@ -48,4 +48,4 @@ label_list: ["A", "B"]
 min_excerpt_index: 0 # only use excerpt indices greater equal this
 max_excerpt_index: 100 # only use excerpt indices lower than this (i.e. first 100 samples)
 texts_to_include: [69087, 72578, 72600, 72869, 72958, 72963, 72972, 73017, 73042] # ids of text documents to include
-suffixes_to_include: ["250-s50-n110.csv", "250-s20-n110.csv", "1000-s50-n110.csv", "1000-s20-n110.csv", "2500-s50-n110.csv","2500-s20-n110.csv", "10000-s50-n110.csv", "10000-s20-n110.csv", "20000-s50-n110.csv", "20000-s20-n110.csv"]
+suffixes_to_include: ["250-s50-n110.csv", "250-s20-n110.csv", "1000-s50-n110.csv", "1000-s20-n110.csv", "2500-s50-n110.csv","2500-s20-n110.csv"]
