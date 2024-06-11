@@ -4,8 +4,8 @@ Generates 3 separate csv files for different excerpt & segment lengths.
 TODO: More extensive description about what each file contains
 TODO: Add assumptions about data inputs (words_array, chapter info, chapter titles)
 """
-from sort.create_sort_text_dataset import create_sort_samples
-from sort.text_utils import concatenate_text_without_titles
+from sort.dataset_creation.create_sort_text_dataset import create_sort_samples
+from sort.dataset_creation.text_utils import concatenate_text_without_titles
 import numpy as np
 import pandas as pd
 

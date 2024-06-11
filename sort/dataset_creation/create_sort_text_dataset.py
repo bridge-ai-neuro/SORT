@@ -11,8 +11,8 @@ Read the top of sort/create_sort_dataset.py for more details on the data samplin
 """
 import numpy as np
 
-from sort.utils import check_sample_uniformity
-from sort.text_utils import sample_random_text, sample_segments_sentence_start_bins
+from sort.dataset_creation.utils import check_sample_uniformity
+from sort.dataset_creation.text_utils import sample_random_text, sample_segments_sentence_start_bins
 
 
 def sample_segments(n_per_bucket, permuted_answers, sample_fn, segment_len, excerpts, sample_kwargs):

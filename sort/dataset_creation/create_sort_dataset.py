@@ -31,7 +31,8 @@ are sampled from a set of n_bins. e.g. 2 bins could be defined by bin edges [L_S
 import numpy as np
 import warnings
 
-from sort.utils import sample_random_subsequence, check_sample_uniformity, sample_segments_offset_bounds
+from sort.dataset_creation.utils import sample_random_subsequence, check_sample_uniformity, \
+    sample_segments_offset_bounds
 
 
 def sample_segments(n_per_bucket, permuted_answers, sample_fn, segment_len, excerpts, sample_kwargs):
