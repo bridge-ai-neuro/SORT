@@ -129,7 +129,7 @@ Within each unique book excerpt, we sampled segment pairs with varying distances
 
 We only evaluated the Sequence Order Recall Task on the first 100 segment pairs in each combination of book, $L_E$, $L_S$, and $L_D$. The remaining pairs are reserved for other uses (e.g. selecting which prompt format produces the best SORT results).
 
-A complete description of the data fields is given in the BookSORT metadata following the MLCroissant 1.0 specification. [TODOLINK](TODOLINK)
+A complete description of the data fields is given in the [BookSORT metadata](BookSORT_metadata.json) following the MLCroissant 1.0 specification.
 
 #### Data Subject(s)
 <!-- scope: telescope -->
@@ -236,7 +236,7 @@ out for, or other relevant information or considerations. -->
 <!-- info: Provide links that describe documentation to access this
 dataset: -->
 - [Dataset Website URL](TODO)
-- [GitHub URL](TODO)
+- [GitHub URL](https://github.com/bridge-ai-neuro/SORT/tree/main/data/booksort)
 
 ## Provenance
 ### Collection
@@ -256,7 +256,7 @@ considerations.
 type.) -->
 **Collection Type**
 
-**Source:** The full text of the books are taken from [https://gutenberg.org/](https://gutenberg.org/). 
+**Source:** The full text of the books are taken from [https://gutenberg.org/](https://gutenberg.org/). This follows their [license](https://www.gutenberg.org/policy/license.html) specifying the terms of use. 
 
 **Is this source considered sensitive or high-risk?** No
 
@@ -327,7 +327,7 @@ dataset: -->
 - Multi-stage Sampling
 - Random Sampling
 
-The text excerpts and segments are all sampled from randomly and uniformly from across the text. Since we required all of these to begin at a sentence boundary, we first found all the relevant sentence boundaries and sampled uniformly from this set. Specific details can be found in the release of the dataset creation code [here](TODOLINK).
+The text excerpts and segments are all sampled from randomly and uniformly from across the text. Since we required all of these to begin at a sentence boundary, we first found all the relevant sentence boundaries and sampled uniformly from this set. Specific details can be found in the release of the dataset creation code [here](../sort/dataset_creation/).
  
 ## Known Applications & Benchmarks
 <!-- info: Fill out the following section if your dataset was primarily
