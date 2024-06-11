@@ -12,7 +12,7 @@ Memory (LTM) condition it is given ahead of time, e.g., at training, at fine-tun
 ## Book-SORT dataset
 As part of this benchmark, we include the `Book-SORT` dataset. This dataset implements both STM and LTM conditions for
 a set of 9 public domain books. 
-
+More information about this dataset can be found in the [`Book-SORT` dataset card](data/booksort/README.md).  
 
 ## Citation
 If you use SORT or Book-SORT in a publication, please cite our benchmark paper:
