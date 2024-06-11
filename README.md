@@ -73,7 +73,7 @@ python evaluation.py --config-name <config_yaml> ++model_name=<model_name> promp
 The results are stored in ????. By looking at ??? file that shows the 
 accuracy of the model in the different STM and LTM conditions.
 
-# Extending the benchmark
+# Extending SORT
 
 ## Adding a new book to Book-SORT
 
