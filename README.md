@@ -40,7 +40,7 @@ the preprocessed data and metadata for all books should be stored in `data/pg/te
 This script will store the generated dataset in `data/data_csv_files/`.
 
 ```shell
-python sort/run_booksort_creation.py 
+python sort/dataset_creation/run_booksort_creation.py 
 ```
 
 ## Prompt validation
