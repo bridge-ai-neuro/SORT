@@ -1,0 +1,83 @@
+# Which other config files to include in this config (e.g. prompt1.yaml)
+defaults:
+  - prompts: prompt_2.yaml # This needs to be specified from command line (needed for the prompt-sweep)
+  - _self_
+
+# Prompt-sweep (only for pre-experiment to determine the best prompt, if prompt_eval=True)
+hydra:
+  sweeper:
+    params:
+      prompts: glob(*) # sweep over all prompt configs in the folder conf/prompts/
+      task_type: choice("first")
+
+training:
+  text_only_finetune: false
+  local_output_dir: "./nobackup/saves/" # path to which we want to write the results
+  per_device_train_batch_size: 3 # batch size per A100 (e.g. 5)
+  per_device_eval_batch_size: 3 
+  gradient_accumulation_steps: 8
+  bf16: true
+  lr: 5.0e-6
+  epochs: 5
+  save_strategy: "epoch"
+  deepspeed: "./ds_z3_bf16_config.json" #"/NS/llm-1/work/qwu/llm_knowledge/util_public/training/config/ds_z2_bf16_config.json" #"/NS/llm-1/work/qwu/reliable_usable_LKE/sanity_check/config/ds_z3_bf16_config.json" # path to deepspeed config json
+  gradient_checkpointing: true
+  save_total_limit: false
+  wandb_run_name: false
+  local_rank: -1
+  warmup_steps: 0
+  weight_decay: 0.0001
+  lr_schedule: "cosine"
+  resume_from_checkpoint: false
+  # data to train on settings
+  include_instruction_data: true
+  only_use_instruction_data: true # SET TO FALSE FOR MEMORY TRAINING
+  instruction_data_path: "./openhermes_15500.json"
+  task_example_path: false
+  include_task_examples: false
+  logging_strategy: "steps"
+  task_finetune: false
+  n_instruction_samples: 3500
+  instruction_sample_length_factor: 1.0
+  max_model_length: 8192 # whatever fits on the GPU should be put in here! We can filter to only train on 16k token excerpts on the 2A100 machines, and then later only evaluate LTM up to that
+  use_other_data_instead: true # whether to use other chunks of the data (already preprocessed with the right instruction template etc., a csv with a column "text")
+  other_data: "./all_books_finetuning_llama3-8b.csv" # path to the other data
+
+# For debugging:
+test: true # Has no effects other than printing some of the prompts occasionally
+debugging: false # to quickly see if a new model is working properly, use this.
+run_analysis: true # should generally be true
+n_logprobs: 20 # number of top answer logprobs to consider 
+log_prompt_logprobs: true # needs to be false for long context and for prompt sweeps (requires much more GPU memory), also false for OpenAI
+
+# use only the last 10 samples for each distance condition to select the prompt
+prompt_eval: false # set to false for main eval
+select_prompt: false
+
+# Paths (adapt to your system/setup):
+result_folder: "results"
+chat_template_directory: "./chat_templates" # Directory with .jinja files for different models
+data_path: "./sort_dataset" # Directory with .csv files for the different conditions (segments_250-s20-n100.csv, books_250-s20-n100.csv, excerpts_250-s20-n100.csv, ...)
+model_paths_csv: "./model_paths.csv" # csv file with mapping from model_name (str) to model_path (str). For new HF models, simply add a new entry where the model_path is e.g. "google/gemma-7b"
+prompt_eval_csv: "./model_prompt_results.csv" # This file does not have to exist prior to running experiments. Only used/accessed for the prompt sweep.
+download_path: "./nobackup/" # Where to store new models from HF (if models have not already been downloaded)
+
+# GPU-setup (adapt for multi-gpu setups)
+tensor_parallel_size: 1 # set to number of gpus available to the job
+gpu_memory_utilization: 0.9 # can possibly be set higher
+trust_remote_code: true # not necessary for most models - can potentially be unsafe
+batch_size: 1 # can be arbitrarily high, vLLM will decide on parallel vs sequential serving
+
+# Experiment setup:
+model_name: "Llama3-8b-inst"
+overwrite_chat_template: true # Adds system prompt for llama and for mistral even though they have not been instruction-tuned with support for it
+use_system_prompt: true # If overwrite_chat_template is false, this should also be false for models that do not natively support system prompts
+in_context: true # Whether to include the pre_excerpt prompt or not
+task_type: "first" # Whether the task is to answer which is first or second/last
+label_list: ["A", "B"]
+
+# Data selection. Which parts of the data to evaluate (to exclude books, excerpt lengths etc.)
+min_excerpt_index: 100 # only use excerpt indices greater equal this
+max_excerpt_index: 120 # only use excerpt indices lower than this (i.e. first 100 samples)
+books_to_include: [69087, 72578, 72600, 72869, 72958, 72963, 72972, 73017, 73042]
+suffixes_to_include: ["250-s20-n100.csv","1000-s20-n100.csv", "2500-s20-n100.csv", "250-s50-n100.csv", "1000-s50-n100.csv", "2500-s50-n100.csv"] 
