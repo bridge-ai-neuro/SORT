@@ -47,11 +47,11 @@ python sort/run_booksort_creation.py
 Before evaluating a model, it is recommended to know what is the best performing prompt for such model.
 For this step, the following things are needed: a config file, a model, the set of prompt templates, and the data for 
 running on those prompts.
-1. The model `<model_name>` should appear in the model_paths.csv file. This file serves as a mapping for model names to their local folder 
+1. The model `<model_name>` should appear in the `model_paths.csv` file. This file serves as a mapping for model names to their local folder 
 and their libraries to run them (huggingface, vllm, or openai apis).
 2. The original set of prompt templates is stored in the folder `config/prompts/`.
 3. The config file `<config_yaml>` should be stored in `config/` as a yaml file. 
-4. The preprocessed data should be stored in `data/`.
+4. The dataset should be stored in `data/`.
 
 To run the prompt sweep, use the following command:
 ```shell
@@ -63,6 +63,13 @@ The results are stored in ????, and the best prompt can be chosen by looking at 
 accuracy.
 
 ## Evaluating a model
+Once the best prompt for a model is known, it is time to evaluate the model in the entire dataset.
+For this step, the following things are needed: a config file, a model, a prompt file, and the dataset.
+1. The model `<model_name>` should appear in the `model_paths.csv` file. This file serves as a mapping for model names to their local folder 
+and their libraries to run them (huggingface, vllm, or openai apis).
+2. The prompt file `<prompt_yaml>` should be stored in `config/prompts/` as a yaml file.
+3. The config file `<config_yaml>` should be stored in `config/` as a yaml file. 
+4. The dataset should be stored in `data/`.
 
 To run the evaluation of a model, use the following command:
 ```shell
