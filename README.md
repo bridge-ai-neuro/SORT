@@ -11,7 +11,9 @@ Memory (LTM) condition it is given ahead of time, e.g., at training, at fine-tun
 
 ## Book-SORT dataset
 As part of this benchmark, we include the `Book-SORT` dataset. This dataset implements both STM and LTM conditions for
-a set of 9 public domain books. 
+a set of 9 public domain books. The original book files can be found in `data/pg/full_text/`.
+The processed dataset should be downloaded to `data/booksort/`.
+
 More information about this dataset can be found in the [`Book-SORT` dataset card](data/booksort/README.md).  
 
 ## Citation
@@ -32,7 +34,14 @@ user defined environment:
 pip install -r requirements.txt
 ```
 
-## Dataset processing
+## Dataset generation
+A similar version of the `Book-SORT` dataset can be created with the `sort/run_booksort_creation.py` script.
+the preprocessed data and metadata for all books should be stored in `data/pg/text_arrays/`.
+This script will store the generated dataset in `data/data_csv_files/`.
+
+```shell
+python sort/run_booksort_creation.py 
+```
 
 ## Prompt validation
 Before evaluating a model, it is recommended to know what is the best performing prompt for such model.
