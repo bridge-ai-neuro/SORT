@@ -26,7 +26,7 @@ chat_template_directory: "./chat_templates" # Directory with .jinja files for di
 data_path: "./sort_dataset" # Directory with .csv files
 model_paths_csv: "model_paths.csv" # csv file with mapping from model_name (str) to model_path (str). For new HF models, simply add a new entry where the model_path is e.g. "google/gemma-7b"
 prompt_eval_csv: "model_prompt_results.csv" # This file does not have to exist prior to running experiments. Only used/accessed for the prompt sweep.
-download_path: "/BRAIN/memory_evaluations/nobackup/" # Where to store new models from HF
+download_path: "./nobackup/" # Where to store new models from HF
 
 # GPU-setup (adapt for multi-gpu setups)
 tensor_parallel_size: 1 # set to number of gpus available to the job
