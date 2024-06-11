@@ -55,7 +55,7 @@ and their libraries to run them (huggingface, vllm, or openai apis).
 
 To run the prompt sweep, use the following command:
 ```shell
-python evaluation.py --multirun --config-name <config_yaml> ++model_name=<model_name> ++min_excerpt_index=100 ++max_excerpt_index=120
+python sort/evaluation/evaluation.py --multirun --config-name <config_yaml> ++model_name=<model_name> ++min_excerpt_index=100 ++max_excerpt_index=120
 ```
 
 **TODO**
@@ -73,7 +73,7 @@ and their libraries to run them (huggingface, vllm, or openai apis).
 
 To run the evaluation of a model, use the following command:
 ```shell
-python evaluation.py --config-name <config_yaml> ++model_name=<model_name> prompts=<prompt_yaml> ++prompt_eval=false
+python sort/evaluation/evaluation.py --config-name <config_yaml> ++model_name=<model_name> prompts=<prompt_yaml> ++prompt_eval=false
 ```
 
 **TODO**
