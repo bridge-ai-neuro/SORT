@@ -1,0 +1,51 @@
+# Which other config files to include in this config (e.g. prompt1.yaml)
+defaults:
+  - prompts: ???
+  - _self_
+
+# For prompt-sweep (only for pre-experiment to determine the best prompt, if prompt_eval=True)
+hydra:
+  sweeper:
+    params:
+      prompts: glob(*) # sweep over all prompt configs in the folder conf/prompts/
+      task_type: choice("first")  #, "second")
+
+# For debugging:
+test: true # Has no effects other than printing some of the prompts occasionally
+debugging: false # to quickly see if a new model is working properly, use this.
+run_analysis: true # should generally be true
+n_logprobs: 20 # number of top answer logprobs to consider
+log_prompt_logprobs: false # needs to be false for long context and for prompt sweeps (requires much more GPU memory), also false for OpenAI
+
+# use only the last 10 samples for each distance condition to select the prompt
+prompt_eval: 1  # set to false for main eval
+
+# Paths (adapt to your system/setup):
+result_folder: "results"
+chat_template_directory: "./chat_templates" # Directory with .jinja files for different models
+data_path: "./sort_dataset" # Directory with .csv files
+model_paths_csv: "model_paths.csv" # csv file with mapping from model_name (str) to model_path (str). For new HF models, simply add a new entry where the model_path is e.g. "google/gemma-7b"
+prompt_eval_csv: "model_prompt_results.csv" # This file does not have to exist prior to running experiments. Only used/accessed for the prompt sweep.
+download_path: "/BRAIN/memory_evaluations/nobackup/" # Where to store new models from HF
+
+# GPU-setup (adapt for multi-gpu setups)
+tensor_parallel_size: 1 # set to number of gpus available to the job
+gpu_memory_utilization: 0.8 # can possibly be set higher
+trust_remote_code: false # not necessary for most models - can potentially be unsafe
+batch_size: 1024 # can be arbitrarily high, vLLM will decide on parallel vs sequential serving
+
+# Experiment setup:
+api: 'vllm'  # Options are ['hf', 'openai', 'vllm']
+model_name: "mistral-instruct-7b-v2" #"openai-gpt-3.5-turbo-0125" #"mistral-instruct-7b"
+overwrite_chat_template: true
+use_system_prompt: true
+in_context: true # Whether to include the pre_excerpt prompt or not
+task_type: "first" # Whether the task is to answer which is first or second/last
+sample_n_tokens: 1 # Number of tokens to generate. Allow this to be >1 in case coherent text is generated
+label_list: ["A", "B"]
+
+# Data selection. Which parts of the data to evaluate (to exclude books, excerpt lengths etc.)
+min_excerpt_index: 0 # only use excerpt indices greater equal this
+max_excerpt_index: 100 # only use excerpt indices lower than this (i.e. first 100 samples)
+texts_to_include: [69087, 72578, 72600, 72869, 72958, 72963, 72972, 73017, 73042] # ids of text documents to include
+suffixes_to_include: ["250-s50-n110.csv", "250-s20-n110.csv", "1000-s50-n110.csv", "1000-s20-n110.csv", "2500-s50-n110.csv","2500-s20-n110.csv", "10000-s50-n110.csv", "10000-s20-n110.csv", "20000-s50-n110.csv", "20000-s20-n110.csv"]
