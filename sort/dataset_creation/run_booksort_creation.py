@@ -1,8 +1,26 @@
 """
-Generates 3 separate csv files for different excerpt & segment lengths.
+Generates 3 separate CSV files for different excerpt & segment lengths. These csv files form BookSORT, and are the
+inputs to SORT evaluation.
 
-TODO: More extensive description about what each file contains
-TODO: Add assumptions about data inputs (words_array, chapter info, chapter titles)
+SCRIPT INPUTS
+This script requires preprocessed book text files. Please run `sort/dataset_creation/preprocess_pg_books.py` to
+generate two files for each book:
+(1) {book_id}_words.npy: a cleaned numpy array of the words in the full text, including chapter titles but excluding
+                         front and back matter in the book such as the table of contents, author's note, etc.
+(2) {book_id}_chapter_info.npy: a metadata dictionary containing information about the chapters in the book. this
+                                allows us to generate the BookSORT samples excluding the chapter titles.
+
+SCRIPT OUTPUTS
+This script outputs 3 CSV files for each excerpt length (el) and segment length (sl) combination. We can consider the
+excerpt and segment length as a single condition.
+(1) books_{el}-s{sl}-n{n_samples}.csv: Information about the books included in this condition.
+(2) excerpts_{el}-s{sl}-n{n_samples}.csv: The text excerpts for each book and associated information.
+(3) segments_{el}-s{sl}-n{n_samples}.csv: The text segments corresponding to each excerpt and associated information.
+                                          The `segment_1` column is the text segment that appears first in the text,
+                                          and `segment_2` appears last. There is also the column `present_seg1_first`
+                                          which is a binary variable key to indicate whether segment 1 is presented
+                                          as the first option for SORT evaluation. This value is counterbalanced
+                                          within each condition to ensure chance performance is exactly 50%.
 """
 from sort.dataset_creation.create_sort_text_dataset import create_sort_samples
 from sort.dataset_creation.text_utils import concatenate_text_without_titles
@@ -10,12 +28,12 @@ import numpy as np
 import pandas as pd
 
 # Parameters you may wish to modify
-book_info_path = "../pg/text_arrays"
+book_info_path = "../../data/pg/text_arrays"
 book_list = [69087, 72578, 72600, 72869, 72958, 72963, 72972, 73017, 73042]
 excerpt_lengths = [250, 1000, 2500, 10000, 20000]
 segment_lengths = [20, 50]
 samples_per_condition = 100
-output_dir = '../data_csv_files'
+output_dir = '../../data/booksort/'
 
 # Other variables we will use in dataset creation
 n_samples = None
@@ -29,10 +47,10 @@ for el in excerpt_lengths:
     for sl in segment_lengths:
         data_to_save = {b: dict() for b in book_list}
         if el < 5000:
-            dists = [sl, el // 4, el // 3, el // 2, int(el // 1.25)]
+            segment_distance_bins = [sl, el // 4, el // 3, el // 2, int(el // 1.25)]
         else:
-            dists = [sl, 1000, el // 4, el // 2, int(el // 1.25)]
-        n_bins = len(dists)
+            segment_distance_bins = [sl, 1000, el // 4, el // 2, int(el // 1.25)]
+        n_bins = len(segment_distance_bins)
         # Initialize output data frames (which will be written to CSV)
         book_df = pd.DataFrame(columns=book_df_cols)
         excerpt_df = pd.DataFrame(columns=excerpt_df_cols)
@@ -54,11 +72,11 @@ for el in excerpt_lengths:
             book_df = pd.concat([book_df, pd.DataFrame(dict(zip(book_df_cols, vals)), index=[0])], ignore_index=True)
             print(f"PROCESSING book {i} {book_id} e{el},s{sl}")
             output = create_sort_samples(book_id, samples_per_condition, excerpt_len=el, segment_len=sl,
-                                    segment_distance_bins=dists, seed=book_id + el + sl)
+                                         segment_distance_bins=segment_distance_bins, seed=book_id + el + sl)
             samples, segments, answers, segment_positions, excerpt_pos, args = output  # unpack the output
             dist_keys = list(samples.keys())
             if n_samples is None:
-                n_samples = len(samples[dists[1]])
+                n_samples = len(samples[segment_distance_bins[1]])
 
             for j, dk in enumerate(dist_keys):
                 if j == 0:
