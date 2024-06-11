@@ -35,8 +35,8 @@ pip install -r requirements.txt
 ```
 
 ## Dataset generation
-A similar version of the `Book-SORT` dataset can be created with the `sort/run_booksort_creation.py` script.
-the preprocessed data and metadata for all books should be stored in `data/pg/text_arrays/`.
+A similar version of the `Book-SORT` dataset can be created with the `sort/run_booksort_creation.py` script. There may be minor differences due to random seed variations.
+The preprocessed data and metadata for all books should be stored in `data/pg/text_arrays/`.
 This script will store the generated dataset in `data/data_csv_files/`.
 
 ```shell
