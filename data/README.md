@@ -129,7 +129,7 @@ Within each unique book excerpt, we sampled segment pairs with varying distances
 
 We only evaluated the Sequence Order Recall Task on the first 100 segment pairs in each combination of book, $L_E$, $L_S$, and $L_D$. The remaining pairs are reserved for other uses (e.g. selecting which prompt format produces the best SORT results).
 
-A complete description of the data fields is given in the [BookSORT metadata](BookSORT_metadata.json) following the MLCroissant 1.0 specification.
+A complete description of the data fields is given in the [BookSORT metadata](booksort/BookSORT_metadata.json) following the MLCroissant 1.0 specification.
 
 #### Data Subject(s)
 <!-- scope: telescope -->
