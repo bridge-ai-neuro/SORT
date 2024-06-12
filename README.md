@@ -14,7 +14,7 @@ As part of this benchmark, we include the `Book-SORT` dataset. This dataset impl
 a set of 9 public domain books. The original book files can be found in `data/pg/full_text/`.
 The processed dataset should be downloaded to `data/booksort/`.
 
-More information about this dataset can be found in the [`Book-SORT` dataset card](data/booksort/README.md).  
+More information about this dataset can be found in the [`Book-SORT` dataset card](data/README.md).  
 
 ## Citation
 If you use SORT or Book-SORT in a publication, please cite our benchmark paper:
