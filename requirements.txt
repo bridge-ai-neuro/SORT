@@ -1,7 +1,7 @@
+vllm==0.4.0.post1
 numpy
 torch
 scipy
-vllm==0.4.0.post1
 # vllm installs transformers==4.39.3
 xformers==0.0.23.post1
 triton==2.1.0
