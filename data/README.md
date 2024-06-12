@@ -236,7 +236,7 @@ out for, or other relevant information or considerations. -->
 <!-- info: Provide links that describe documentation to access this
 dataset: -->
 - [Dataset Website URL](TODO)
-- [GitHub URL](https://github.com/bridge-ai-neuro/SORT/tree/main/data/booksort)
+- [GitHub URL](data/booksort)
 
 ## Provenance
 ### Collection
