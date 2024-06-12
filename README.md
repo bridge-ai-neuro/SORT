@@ -113,6 +113,28 @@ Follow these steps to extend the `Book-SORT` dataset with a new book:
 4. Run the dataset generation procedure describe above.
 
 ## Adding a new prompt
+Creating a new prompt requires to define a `prompt_<NUM>.yaml`, where `<NUM>` should be replaced with the successor of the last prompt file in the `sort/evaluation/conf/prompts/` directory.
+The new yaml prompt file should be stored in that same directory.
+
+A prompt file should contain the following variables:
+* `name`: the yaml filename that will be used as an identifier (e.g., prompt_0.yaml).
+* `system_prompt`: This string is given as the system prompt. Not all models have this capability. (e.g., "You are a helpful, respectful and honest assistant.")
+* `pre_excerpt`: This string is used to present the excerpt. (e.g., "Please take some time to thoroughly read and comprehend this extract from the book <booktitle>. The passage is as follows: <excerpt>")
+* `post_excerpt`: This string is presented after the excerpt and suggesting the instruction to the model to answer about the order (e.g.,"You will be shown pairs of text fragments from <booktitle>. Please select which of two fragments appeared <tasktype> in the book. You will be shown 10 such pairs. <segments> Which fragment appeared <tasktype> in the book, <label_list[0]> or <label_list[1]>?")
+* `model_answer_prefix`: This string is to force the model to answer A or B segment (e.g., "Answer: Segment"). Not all models accept a partial guidance for generating an answer. 
+
+As shown above, the following tags should be used inside the strings to allow the evaluation code to replace them with 
+the data samples:
+* `<booktitle>`: the book title
+* `<excerpt>`: the excerpt text
+* `<tasktype>`: replaced with first or last
+* `<segments>`: the two segment texts 
+* `<label_list[0]>` and `<label_list[1]>`: the labels for each segment (e.g., A or B)
 
 ## Adding a new model
+Evaluating a new model requires to add it to the list of models `sort/evaluation/model_paths.csv`.
+Each line in that file follows the following pattern: `<ID>,<model_name>,<model_path>`.  
+The `<model_name>` is internal to the SORT code and will be used to call the evaluation script. 
+The `<model_path>` can be an absolute path or a huggingface model hub
+directory, e.g., `mistralai/Mistral-7B-Instruct-v0.2`.
 
