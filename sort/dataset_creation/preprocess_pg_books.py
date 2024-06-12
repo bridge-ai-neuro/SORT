@@ -15,6 +15,7 @@ Outputs of this script
 """
 import argparse
 import numpy as np
+import os
 import re
 
 
@@ -100,7 +101,7 @@ def save_book_data(book_path, text_path):
     for book_id, bdict in ch_dict.items():
         print(f"Parsing {book_id}")
         # Read in the full text of the book
-        path = f'{book_path}{book_id}-0.txt'
+        path = f'{book_path}/{book_id}-0.txt'
         with open(path, 'r') as fp:
             tmp = fp.read()
         # Strip out the title from the book and save
@@ -125,6 +126,7 @@ def save_book_data(book_path, text_path):
         assert sum(ch_len) == len(tmp), "Chapter lengths don't sum to book length!"
         book_words = np.array(tmp)
         # Save the outputs of preprocessing
+        os.makedirs(text_path, exist_ok=True)
         np.save(f'{text_path}/{book_id}_words.npy', book_words, allow_pickle=True)
         np.save(f'{text_path}/{book_id}_chapter_info.npy', ch_dict[book_id], allow_pickle=True)
 
@@ -133,6 +135,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--full_text_path', type=str, default='../../data/pg/full_text')
     parser.add_argument('--output_path', type=str, default='../../data/pg/text_arrays')
-    args = parser.parse_args
+    args = parser.parse_args()
 
     save_book_data(book_path=args.full_text_path, text_path=args.output_path)
