@@ -12,7 +12,7 @@ import torch
 def load_model_tokenizer(model_path, cfg, openai_model=False):
     print(f"Loading model: {model_path}")
     if cfg.api == 'openai':
-        fp = open('/home/vyvo/openai.txt', encoding='utf-8-sig')
+        fp = open('openai.txt', encoding='utf-8-sig')
         key = fp.read().replace('\n', '')
         fp.close()
         client = OpenAI(api_key=key)  # Initialize OpenAI
