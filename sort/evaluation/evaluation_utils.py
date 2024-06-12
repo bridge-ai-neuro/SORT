@@ -12,7 +12,7 @@ import torch
 def load_model_tokenizer(model_path, cfg, openai_model=False):
     print(f"Loading model: {model_path}")
     if cfg.api == 'openai':
-        fp = open('/home/vyvo/openai.txt', encoding='utf-8-sig')
+        fp = open('openai.txt', encoding='utf-8-sig')
         key = fp.read().replace('\n', '')
         fp.close()
         client = OpenAI(api_key=key)  # Initialize OpenAI
@@ -56,8 +56,8 @@ def load_model_tokenizer(model_path, cfg, openai_model=False):
             gpu_memory_utilization=cfg.gpu_memory_utilization,
             tensor_parallel_size=cfg.tensor_parallel_size,
             max_logprobs=32000000,
-            #dtype='half',  # VAV DEBUG WITH OLDER HW
-            #max_model_len=1e8  # VAV DEBUG WITH GPT-2
+            #dtype='half',  # DEBUG WITH OLDER HW
+            #max_model_len=1e8  # DEBUG WITH GPT-2
         )
         # for debugging, see if a model generates sensible output given a chat template
         if cfg.debugging:
