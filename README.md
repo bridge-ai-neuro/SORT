@@ -71,13 +71,9 @@ In the case that accuracies are very close for two or more prompt formulations, 
 proportion of A vs B responses, which should be close to 0.5. 
 
 ## Finetuning a model for LTM
-In order to reproduce the finetuning process for the related LTM condition experiment, please execute the following 
-scripts:
-```shell
-./sort/finetuning/finetune_books.sh
-./sort/finetuning/finetune_summaries.sh
-./sort/finetuning/finetune_instructions.sh
-```
+In order to reproduce the finetuning process for the related LTM condition experiment, please execute the follow the 
+instructions in [the finetuning code](sort/finetuning/README.md). 
+
 
 ## Evaluating a model
 Once the best prompt for a model is known, it is time to evaluate the model in the entire dataset.
