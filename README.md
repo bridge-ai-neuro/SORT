@@ -138,3 +138,8 @@ The `<model_name>` is internal to the SORT code and will be used to call the eva
 The `<model_path>` can be an absolute path or a huggingface model hub
 directory, e.g., `mistralai/Mistral-7B-Instruct-v0.2`.
 
+If the model is an instruction-tuned model, you may want to include its jinja file in `sort/evaluation/chat_templates/`,
+and include the name of the chat template file inside the `experiment()` function in `sort/evaluation/evaluation.py`.
+
+Next, update the `config.yaml` file that will be used to evaluate the model. Make sure that the right `api` is defined, 
+and the other instructions for evaluating the model are being followed.
