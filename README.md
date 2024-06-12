@@ -35,11 +35,14 @@ pip install -r requirements.txt
 ```
 
 ## Dataset generation
-A similar version of the `Book-SORT` dataset can be created with the `sort/run_booksort_creation.py` script. There may be minor differences due to random seed variations.
+A similar version of the `Book-SORT` dataset can be created with the `sort/dataset_creation/run_booksort_creation.py` script. 
+There may be minor differences due to random seed variations.
+First, it is necessary to preprocess the books with the `sort/dataset_creation/preprocess_pg_books.py`.
 The preprocessed data and metadata for all books should be stored in `data/pg/text_arrays/`.
 This script will store the generated dataset in `data/data_csv_files/`.
 
 ```shell
+python sort/dataset_creation/preprocess_pg_books.py
 python sort/dataset_creation/run_booksort_creation.py 
 ```
 
@@ -58,9 +61,18 @@ To run the prompt sweep, use the following command:
 python sort/evaluation/evaluation.py --multirun --config-name <config_yaml> ++model_name=<model_name> ++min_excerpt_index=100 ++max_excerpt_index=120
 ```
 
-**TODO**
-The results are stored in ????, and the best prompt can be chosen by looking at ??? file that shows the highest 
-accuracy.
+The results are stored in folders inside `sort/evaluation/outputs/`, and the best prompt is decided based on accuracy.
+In the case that accuracies are very close for two or more prompt formulations, it could be decided based on the 
+proportion of A vs B responses, which should be close to 0.5. 
+
+## Finetuning a model for LTM
+In order to reproduce the finetuning process for the related LTM condition experiment, please execute the following 
+scripts:
+```shell
+./sort/finetuning/finetune_books.sh
+./sort/finetuning/finetune_summaries.sh
+./sort/finetuning/finetune_instructions.sh
+```
 
 ## Evaluating a model
 Once the best prompt for a model is known, it is time to evaluate the model in the entire dataset.
@@ -71,18 +83,29 @@ and their libraries to run them (huggingface, vllm, or openai apis).
 3. The config file `<config_yaml>` should be stored in `sort/evaluation/conf/` as a yaml file. 
 4. The dataset should be stored in `data/`.
 
-To run the evaluation of a model, use the following command:
+### Long-Term Memory evaluation
+To run the evaluation of a model for LTM condition, use the following command:
 ```shell
-python sort/evaluation/evaluation.py --config-name <config_yaml> ++model_name=<model_name> prompts=<prompt_yaml> ++prompt_eval=false
+python sort/evaluation/evaluation.py --config-name <config_yaml> ++model_name=<model_name> prompts=<prompt_yaml> ++prompt_eval=false ++in_context=false
 ```
 
-**TODO**
-The results are stored in ????. By looking at ??? file that shows the 
-accuracy of the model in the different STM and LTM conditions.
+### Short-Term Memory evaluation
+To run the evaluation of a model for STM condition, use the following command:
+```shell
+python sort/evaluation/evaluation.py --config-name <config_yaml> ++model_name=<model_name> prompts=<prompt_yaml> ++prompt_eval=false ++in_context=true
+```
+
+Both STM and LTM results are stored in folders inside `sort/evaluation/outputs/`.
+
 
 # Extending SORT
 
 ## Adding a new book to Book-SORT
+Follow these steps to extend the `Book-SORT` dataset with a new book:
+1. Store the story as a text file in `data/pg/full_text`, use an number ID as the filename
+2. Add the metadata of the book to the dictionary `ch_dict` in  `sort/dataset_creation/preprocess_pg_books.py`
+3. Add the book ID to the `book_list` list 
+4. Run the dataset generation procedure describe above.
 
 ## Adding a new prompt
 
