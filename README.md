@@ -56,12 +56,17 @@ and their libraries to run them (huggingface, vllm, or openai apis).
 3. The config file `<config_yaml>` should be stored in `sort/evaluation/conf/` as a yaml file. 
 4. The dataset should be stored in `data/`.
 
+In order to execute a prompt sweep, it is required to update the location where the Huggingface models
+are downloaded and stored to. This is done by configuring the `download_path` variable to the right directory in the 
+`<config_yaml>` file. 
+
 To run the prompt sweep, use the following command:
 ```shell
 python sort/evaluation/evaluation.py --multirun --config-name <config_yaml> ++model_name=<model_name> ++min_excerpt_index=100 ++max_excerpt_index=120
 ```
 
-The results are stored in folders inside `sort/evaluation/outputs/`, and the best prompt is decided based on accuracy.
+The results are stored in the file described in the `prompt_eval_csv` variable in the `<config_yaml>` file. 
+The best prompt is decided based on accuracy.
 In the case that accuracies are very close for two or more prompt formulations, it could be decided based on the 
 proportion of A vs B responses, which should be close to 0.5. 
 
@@ -82,6 +87,10 @@ and their libraries to run them (huggingface, vllm, or openai apis).
 2. The prompt file `<prompt_yaml>` should be stored in `sort/evaluation/conf/prompts/` as a yaml file.
 3. The config file `<config_yaml>` should be stored in `sort/evaluation/conf/` as a yaml file. 
 4. The dataset should be stored in `data/`.
+
+In order to execute evaluate a model, it is required to update the location where the Huggingface models
+are downloaded and stored to. This is done by configuring the `download_path` variable to the right directory in the 
+`<config_yaml>` file. 
 
 ### Long-Term Memory evaluation
 To run the evaluation of a model for LTM condition, use the following command:
