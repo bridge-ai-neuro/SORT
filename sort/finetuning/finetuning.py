@@ -258,5 +258,6 @@ def finetuning(cfg):
 
     log.info("Done.")
 
+
 if __name__ == '__main__':
     finetuning()
