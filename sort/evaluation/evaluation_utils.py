@@ -9,13 +9,11 @@ from vllm import LLM, SamplingParams
 from openai import OpenAI
 import tiktoken
 import torch
-def load_model_tokenizer(model_path, cfg, openai_model=False):
+
+def load_model_tokenizer(model_path, cfg):
     print(f"Loading model: {model_path}")
     if cfg.api == 'openai':
-        fp = open('openai.txt', encoding='utf-8-sig')
-        key = fp.read().replace('\n', '')
-        fp.close()
-        client = OpenAI(api_key=key)  # Initialize OpenAI
+        client = OpenAI(api_key=cfg.api_key)  # Initialize OpenAI
         llm = [client, model_path]
         tokenizer = tiktoken.encoding_for_model(model_path)
         sampling_params = {'max_tokens': cfg.sample_n_tokens, 'top_logprobs': cfg.n_logprobs,
