@@ -1,0 +1,29 @@
+The following sources were scraped manually for summaries or reviews containing plot descriptions of the books:
+
+69087: https://www.sparknotes.com/lit/murder-of-roger-ackroyd/summary/
+72578: https://www.goodreads.com/book/show/8393582-tom-swift-and-his-talking-pictures-or-the-greatest-invention-on-record
+72600: https://www.supersummary.com/the-trumpeter-of-krakow/summary/
+72869: https://en.wikipedia.org/wiki/Meet_the_Tiger
+72958: https://en.wikipedia.org/wiki/Hunting_for_Hidden_Gold
+72972: https://en.wikipedia.org/wiki/Money_for_Nothing_(novel)
+73017: https://www.amazon.co.uk/Pomona-future-English-Classic-Books/dp/B0CYG76RQ6
+73042: https://www.gradesaver.com/the-well-of-loneliness/study-guide/summary
+72972: https://www.goodreads.com/book/show/200573.Money_for_Nothing
+
+The texts were preceded by the following text inside a user prompt:
+
+69087: "Here’s a summary of the book The murder of Roger Ackroyd by Agatha Christie:"
+72578: "These are a collection of reviews describing the book Tom Swift and his talking pictures : or, The greatest invention on record:" with reviews listed as "(Review 1)" etc.
+72600: "Here’s a summary of The Trumpeter of Krakow:"
+72869: "This is the wikipedia article on the book Meet the Tiger by Leslie Charteris:"
+72958: "These are summaries of the book Hunting for hidden gold by Franklin W. Dixon:"
+72972: "Here’s a plot summary of the book Money for nothing by P. G. Wodehouse, taken from wikipedia:"
+73017: "Here is a short description of the book Pomona; or, the future of English by Basil De Selincourt:"
+
+73042: "This is a summary of what’s happening in the book The well of loneliness by Radclyffe Hall:"
+72972: "These are reviews for the book Money for Nothing by P.G. Wodehouse:" with reviews listed as "(Review 1)" etc.
+
+
+
+
+
