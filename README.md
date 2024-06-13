@@ -30,6 +30,11 @@ user defined environment:
 ```shell
 pip install -r requirements.txt
 ```
+FlashAttention needs to be installed with 
+```shell
+pip install flash-attn==0.2.4
+```
+The installation of FlashAttention needs to be done on a machine with GPUs and cuda installed.
 
 ## Dataset generation
 A similar version of the `Book-SORT` dataset can be created with the `sort/dataset_creation/run_booksort_creation.py` script. 
