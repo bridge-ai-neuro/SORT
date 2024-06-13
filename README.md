@@ -1,18 +1,15 @@
 # Sequence Order Recall Task (SORT) Evaluation Framework
 
-SORT is a first-of-a-kind benchmark to test the episodic-memory capabilities of models.
-This goal is achieved by adapting recency judgments in cognitive psychology to evaluate episodic memory in humans and 
-animals. In this task, a sequence is presented to a participant, and, after some delay, the participant is asked to 
+SORT is a first-of-a-kind evaluation method to test episodic-memory capabilities of models.
+This is achieved by adapting recency judgments used in cognitive psychology to evaluate episodic memory in humans and 
+animals. In this task, a sequence is presented to a participant, and, after a delay, the participant is asked to 
 judge the order in which two segments of the sequence appeared. If the delay is long, this task evaluates lasting 
 long-term memory. In the case that the sequence is presented immediately before the ordering task, the task relies on 
-short-term memory. To apply SORT to LLMs, we present a text excerpt, and then ask the models to recall the order of two
-segments. In the Short-Term Memory (STM) condition, the text excerpt is given in-context, whereas in the Long-Term
-Memory (LTM) condition it is given ahead of time, e.g., at training, at fine-tuning, or even an external database.
+short-term memory. 
 
 ## Book-SORT dataset
-As part of this benchmark, we include the `Book-SORT` dataset. This dataset implements both STM and LTM conditions for
-a set of 9 public domain books. The original book files can be found in `data/pg/full_text/`.
-The processed dataset should be downloaded to `data/booksort/`.
+We create a first dataset with SORT, the `Book-SORT` dataset. This dataset comprises a set of 9 public domain books. The original book files can be found in `data/pg/full_text/`.
+The processed dataset can be found in `data/booksort/`.
 
 More information about this dataset can be found in the [`Book-SORT` dataset card](data/README.md).  
 
@@ -36,8 +33,7 @@ pip install -r requirements.txt
 
 ## Dataset generation
 A similar version of the `Book-SORT` dataset can be created with the `sort/dataset_creation/run_booksort_creation.py` script. 
-There may be minor differences due to random seed variations.
-First, it is necessary to preprocess the books with the `sort/dataset_creation/preprocess_pg_books.py`.
+First, it is necessary to preprocess the books with `sort/dataset_creation/preprocess_pg_books.py`.
 The preprocessed data and metadata for all books should be stored in `data/pg/text_arrays/`.
 This script will store the generated dataset in `data/data_csv_files/`.
 
@@ -46,17 +42,17 @@ python sort/dataset_creation/preprocess_pg_books.py
 python sort/dataset_creation/run_booksort_creation.py 
 ```
 
-## Prompt validation
-Before evaluating a model, it is recommended to know what is the best performing prompt for such model.
-For this step, the following things are needed: a config file, a model, the set of prompt templates, and the data for 
+## Prompt selection
+Before evaluating a model, a prompt needs to be selected that works well for the model.
+For this step, the following things are needed: a config file, a model, a set of prompt configs, and the data for 
 running on those prompts.
 1. The model `<model_name>` should appear in the `sort/evaluation/model_paths.csv` file. This file serves as a mapping for model names to their local folder 
 and their libraries to run them (huggingface, vllm, or openai apis).
-2. The original set of prompt templates is stored in the folder `sort/evaluation/conf/prompts/`.
+2. The original set of prompt configs is stored in the folder `sort/evaluation/conf/prompts/`.
 3. The config file `<config_yaml>` should be stored in `sort/evaluation/conf/` as a yaml file. 
 4. The dataset should be stored in `data/`.
 
-In order to execute a prompt sweep, it is required to update the location where the Huggingface models
+In order to execute a prompt selection sweep, it is required to update the location where the Huggingface models
 are downloaded and stored to. This is done by configuring the `download_path` variable to the right directory in the 
 `<config_yaml>` file. 
 
@@ -67,12 +63,12 @@ python sort/evaluation/evaluation.py --multirun --config-name <config_yaml> ++mo
 
 The results are stored in the file described in the `prompt_eval_csv` variable in the `<config_yaml>` file. 
 The best prompt is decided based on accuracy.
-In the case that accuracies are very close for two or more prompt formulations, it could be decided based on the 
+In the case that accuracies are very close for two or more prompt formulations, it can be decided based on the 
 proportion of A vs B responses, which should be close to 0.5. 
 
 ## Finetuning a model for LTM
 In order to reproduce the finetuning process for the related LTM condition experiment, please execute the follow the 
-instructions in [the finetuning code](sort/finetuning/README.md). 
+instructions given in [the finetuning code](sort/finetuning/README.md). 
 
 
 ## Evaluating a model
@@ -122,7 +118,7 @@ A prompt file should contain the following variables:
 * `system_prompt`: This string is given as the system prompt. Not all models have this capability. (e.g., "You are a helpful, respectful and honest assistant.")
 * `pre_excerpt`: This string is used to present the excerpt. (e.g., "Please take some time to thoroughly read and comprehend this extract from the book <booktitle>. The passage is as follows: <excerpt>")
 * `post_excerpt`: This string is presented after the excerpt and suggesting the instruction to the model to answer about the order (e.g.,"You will be shown pairs of text fragments from <booktitle>. Please select which of two fragments appeared <tasktype> in the book. You will be shown 10 such pairs. <segments> Which fragment appeared <tasktype> in the book, <label_list[0]> or <label_list[1]>?")
-* `model_answer_prefix`: This string is to force the model to answer A or B segment (e.g., "Answer: Segment"). Not all models accept a partial guidance for generating an answer. 
+* `model_answer_prefix`: This string is to force the model to answer A or B segment (e.g., "Answer: Segment"). Not all models accept a partial guidance for generating an answer (e.g. OpenAI models). 
 
 As shown above, the following tags should be used inside the strings to allow the evaluation code to replace them with 
 the data samples:
