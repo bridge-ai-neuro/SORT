@@ -32,7 +32,7 @@ book_info_path = "../../data/pg/text_arrays"
 book_list = [69087, 72578, 72600, 72869, 72958, 72963, 72972, 73017, 73042]
 excerpt_lengths = [250, 1000, 2500, 10000, 20000]
 segment_lengths = [20, 50]
-samples_per_condition = 100
+samples_per_condition = 110
 output_dir = '../../data/booksort/'
 
 # Other variables we will use in dataset creation
@@ -71,8 +71,9 @@ for el in excerpt_lengths:
             vals = [book_id, metadata['book_title'].title(), metadata["num_words"]]
             book_df = pd.concat([book_df, pd.DataFrame(dict(zip(book_df_cols, vals)), index=[0])], ignore_index=True)
             print(f"PROCESSING book {i} {book_id} e{el},s{sl}")
-            output = create_sort_samples(book_id, samples_per_condition, excerpt_len=el, segment_len=sl,
-                                         segment_distance_bins=segment_distance_bins, seed=book_id + el + sl)
+            output = create_sort_samples(book_text, samples_per_condition, excerpt_len=el, segment_len=sl,
+                                         segment_distance_bins=segment_distance_bins, seed=book_id + el + sl,
+                                         extra_samples=26)
             samples, segments, answers, segment_positions, excerpt_pos, args = output  # unpack the output
             dist_keys = list(samples.keys())
             if n_samples is None:
