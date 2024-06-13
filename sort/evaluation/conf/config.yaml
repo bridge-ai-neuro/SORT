@@ -36,6 +36,7 @@ batch_size: 1024 # can be arbitrarily high, vLLM will decide on parallel vs sequ
 
 # Experiment setup:
 api: 'vllm'  # Options are ['hf', 'openai', 'vllm']
+api_key: 'openai-api-key'  # right now this is only used for OpenAI
 model_name: "Llama3-8b-inst" #"openai-gpt-3.5-turbo-0125" #"mistral-instruct-7b"
 overwrite_chat_template: true
 use_system_prompt: true

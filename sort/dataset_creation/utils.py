@@ -80,7 +80,7 @@ def sample_random_subsequence(sequence, len_subseq):
 def check_sample_uniformity(position_indices, distribution=None, distribution_scale=None, center=0.0,
         thresh=0.05, verbose=False):
     # Returns True if the position_indices are sampled uniformly from the distribution
-    if distribution:
+    if distribution is not None:
         kst = stats.kstest(position_indices, distribution)
     else:
         kst = stats.kstest(position_indices, stats.uniform(loc=center, scale=distribution_scale).cdf)

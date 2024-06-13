@@ -20,7 +20,7 @@ training:
   lr: 5.0e-6
   epochs: 5
   save_strategy: "epoch"
-  deepspeed: "./ds_z3_bf16_config.json" #"/NS/llm-1/work/qwu/llm_knowledge/util_public/training/config/ds_z2_bf16_config.json" #"/NS/llm-1/work/qwu/reliable_usable_LKE/sanity_check/config/ds_z3_bf16_config.json" # path to deepspeed config json
+  deepspeed: "./ds_z3_bf16_config.json" # path to deepspeed config json
   gradient_checkpointing: true
   save_total_limit: false
   wandb_run_name: false
