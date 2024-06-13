@@ -150,7 +150,11 @@ def create_sort_samples(input_sequence, n_per_bucket, excerpt_len, segment_len, 
 
     if len(skip_samples) > 0:
         drop_more = extra_samples - len(skip_samples)
-        more_inds = np.random.choice(list(skip_samples ^ set(list(range(n_per_bucket + extra_samples)))), drop_more, replace=False)
+        if drop_more < 0:
+            raise ValueError(f"Increase extra_samples or try a different random seed. You had {skip_samples} bad "
+                             "samples so you need at least that number.")
+        more_inds = np.random.choice(list(skip_samples ^ set(list(range(n_per_bucket + extra_samples)))), drop_more,
+                                     replace=False)
         drop_inds = list(skip_samples) + more_inds.tolist()
     else:
         drop_inds = np.random.choice(list(range(n_per_bucket + extra_samples)), extra_samples, replace=False)
