@@ -9,7 +9,7 @@ short-term memory.
 
 ## Book-SORT dataset
 We create a first dataset with SORT, the `Book-SORT` dataset. This dataset comprises a set of 9 public domain books. The original book files can be found in `data/pg/full_text/`.
-The processed dataset can be found in `data/booksort/`.
+The processed dataset (csv files) can be found [here](https://drive.google.com/drive/folders/1MxliwPm_-B717X_4xPJFSqc39BHjffTD?usp=drive_link) should be placed in `data/booksort/`.
 
 More information about this dataset can be found in the [`Book-SORT` dataset card](data/README.md).  
 
