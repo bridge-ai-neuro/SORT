@@ -101,7 +101,8 @@ python sort/evaluation/evaluation.py --config-name <config_yaml> ++model_name=<m
 ```
 
 Both STM and LTM results are stored in folders inside `sort/evaluation/outputs/`.
-
+The model's LTM performance is obtained by running the notebook `ltm_analysis/LTM_analysis_final.ipynb`.
+This presents the summary statistics and the plot in the paper.
 
 # Extending SORT
 
