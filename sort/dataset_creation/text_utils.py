@@ -54,8 +54,9 @@ def sample_random_text(words, num_words, max_len=None, enforce_sentence_bounds=(
     return words[start_ind:end_ind], start_ind
 
 
-def sample_segments_sentence_start_bins(sample_text, seg_length, lower_bound, upper_bound):
+def sample_segments_sentence_start_bins(sample_text, seg_length, offset_bounds):
     # Modification of utils.sample_segments_offset_bounds to force segments to begin at a sentence boundary
+    lower_bound, upper_bound = offset_bounds
     sent_starts = np.array([i + 1 for i, w in enumerate(sample_text) if has_sentence_marker(w)])
     sent_starts = np.insert(sent_starts, 0, [0])
     sent_starts = sent_starts[sent_starts < (len(sample_text) - seg_length)]
@@ -76,7 +77,7 @@ def sample_segments_sentence_start_bins(sample_text, seg_length, lower_bound, up
     if upper_bound > lower_bound:
         assert abs(start_ind1 - start_ind2) < upper_bound, "Sample violated distance bound!"
 
-    return start_ind1, (start_ind2, sent_starts)
+    return start_ind1, start_ind2, sent_starts
 
 
 def concatenate_text_without_titles(words_book, chapters):
