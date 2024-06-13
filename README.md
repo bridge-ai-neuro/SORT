@@ -105,7 +105,7 @@ Both STM and LTM results are stored in folders inside `sort/evaluation/outputs/`
 The model's LTM performance is obtained by running the notebook `ltm_analysis/LTM_analysis_final.ipynb`.
 This presents the summary statistics and the plot in the paper.
 
-# Extending SORT
+# Extending Book-SORT
 
 ## Adding a new book to Book-SORT
 Follow these steps to extend the `Book-SORT` dataset with a new book:
