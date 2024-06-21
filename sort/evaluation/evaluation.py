@@ -58,7 +58,7 @@ def experiment(cfg):
         chat_template_name = "mistral.jinja"
     elif "gemma" in cfg.model_name.lower():
         chat_template_name = "gemma.jinja"
-    elif "llama" in cfg.model_name.lower():
+    elif "llama" in cfg.model_name.lower() and not "llama3" in cfg.model_name.lower():
         chat_template_name = "llama.jinja"
     elif "falcon" in cfg.model_name.lower():
         chat_template_name = "falcon.jinja"
