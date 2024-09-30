@@ -97,7 +97,7 @@ def split_book_into_chapters(book_text, ch_info, book_id):
     return chapter_text
 
 
-def save_book_data(book_path, text_path):
+def save_book_data(book_path, text_path, ch_dict=ch_dict):
     for book_id, bdict in ch_dict.items():
         print(f"Parsing {book_id}")
         # Read in the full text of the book
