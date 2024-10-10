@@ -50,12 +50,12 @@ def sample_segments(n_per_bucket, permuted_answers, sample_fn, segment_len, exce
 
 
 def create_sort_samples(input_sequence, n_per_bucket, excerpt_len, segment_len, segment_distance_bins,
-                        extra_samples=10, seed=100, verbose=False):
+                        extra_samples=10, seed=100, verbose=False, enforce_sentence_bounds=(True, False)):
     """
     Modification of sort.create_sort_dataset.create_sort_samples().
 
     :param input_sequence: array-like. Sequence of words. which can be joined by a whitespace " " separator to form a
-                           continuous string.
+                           continuous string
     :param n_per_bucket: int. Number of excerpts, which is also the number of samples per distance bucket
     :param excerpt_len: int. Length of the text excerpt that contains the two segments
     :param segment_len: int. Length of the two segments to put in order
@@ -65,7 +65,11 @@ def create_sort_samples(input_sequence, n_per_bucket, excerpt_len, segment_len, 
     :param extra_samples: int, default 10. Number of extra samples to generate in case some samples do not pass the
                           desired criteria (here this is only falling within the appropriate distance bin).
     :param seed: int, default 100. Random numpy seed for data generation
-    :param verbose: bool, default False.
+    :param verbose: bool, default False
+    :param enforce_sentence_bounds: tuple of (start_at_sentence, end_at_sentence), default (True, False). If True,
+                                        forces the sample to fall at sentence boundaries. Default only forces beginning
+                                        of sample to start at a sentence boundary, but it can end before a sentence
+                                        boundary.
     :return: Returns 6 items, most of which are dicts where the keys are the right edges of the segment distance
     bins. All data with N items has corresponding indices (e.g. excerpt index 0 corresponds to segment pair at index 0,
     answers at index 0, and segment pair positions at index 0).
@@ -89,12 +93,13 @@ def create_sort_samples(input_sequence, n_per_bucket, excerpt_len, segment_len, 
     np.random.seed(seed)
 
     # Sample excerpts from the sequence
-    excerpts = []
-    excerpt_pos = []  # will normalize to length of the book
     i = 0
     while True:
+        excerpts = []
+        excerpt_pos = []  # will normalize to length of the book
+
         for sample_ind in range(n_per_bucket + extra_samples):
-            tmp, excerpt_ind = sample_random_text(input_sequence, excerpt_len, enforce_sentence_bounds=(True, False))
+            tmp, excerpt_ind = sample_random_text(input_sequence, excerpt_len, enforce_sentence_bounds=enforce_sentence_bounds)
             excerpts.append(tmp)
             excerpt_pos.append(excerpt_ind / len(input_sequence))  # normalized to length of book
         is_uniform = check_sample_uniformity(excerpt_pos, distribution_scale=(len(input_sequence) - excerpt_len) /
@@ -151,7 +156,7 @@ def create_sort_samples(input_sequence, n_per_bucket, excerpt_len, segment_len, 
     if len(skip_samples) > 0:
         drop_more = extra_samples - len(skip_samples)
         if drop_more < 0:
-            raise ValueError(f"Increase extra_samples or try a different random seed. You had {skip_samples} bad "
+            raise ValueError(f"Increase extra_samples or try a different random seed. You had {len(skip_samples)} bad "
                              "samples so you need at least that number.")
         more_inds = np.random.choice(list(skip_samples ^ set(list(range(n_per_bucket + extra_samples)))), drop_more,
                                      replace=False)

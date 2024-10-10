@@ -5,18 +5,22 @@ Given clean input .txt files, this example will:
     - Split remaining string of text into words based on whitespace.
     - Assign a numerical document ID based on order of processing.
 (2) Generate SORT samples from the text for a given excerpt and segment length.
+    - By default, SORT excerpts and segments are constrained to begin at sentence boundaries. These are found by
+    searching for the sentence markers defined in text_utils.py: SENTENCE_MARKERS = {'.', '?', '!', ';'}.
+(3) Save the output either as CSV files or HuggingFace-compatible Parquet files.
 """
 
 import argparse
 import numpy as np
 import os
 import pandas as pd
+from pathlib import Path
 
 from sort.dataset_creation.create_sort_text_dataset import create_sort_samples
 
 
-def main(text_file_path, excerpt_lengths, segment_lengths, samples_per_condition, output_dir,
-         save_word_arrays, extra_sample_percent):
+def main(text_file_path, excerpt_lengths, segment_lengths, samples_per_condition, n_val_samples, output_dir,
+         save_word_arrays, extra_sample_percent, save_csv, save_hf):
     # Very minimal preprocessing on text.
     #   - Extract title from first line of the text file.
     #   - Split remaining string of text into words based on whitespace.
@@ -53,17 +57,18 @@ def main(text_file_path, excerpt_lengths, segment_lengths, samples_per_condition
     segment_df_cols = ["doc_idx", "excerpt_idx", "segment_idx",
                        "segment_1", "segment_2", "seg1_pos", "seg2_pos",
                        "distance_bin", "present_seg1_first"]
-    # Number of
+    # Number of extra samples to generate. Need to generate extra to be sure that all samples meet the requirements (
+    # e.g. excerpt and segment length, distance between segments, segments begin at sentence boundaries, etc.)
     extra_n = int(samples_per_condition * extra_sample_percent)
-    extra_n = extra_n - (extra_n % 2)
+    extra_n = extra_n - ((extra_n + samples_per_condition) % 2)
+
+    if save_hf:
+        data_to_concat = []  # For keeping all excerpt length, segment length combinations
 
     for el in excerpt_lengths:
         for sl in segment_lengths:
             data_to_save = {b: dict() for b in doc_ids}
-            if el < 5000:
-                segment_distance_bins = [sl, el // 4, el // 3, el // 2, int(el // 1.25)]
-            else:
-                segment_distance_bins = [sl, 1000, el // 4, el // 2, int(el // 1.25)]
+            segment_distance_bins = [sl, el // 2]  # User may wish to change these distance bins
             n_bins = len(segment_distance_bins)
             # Initialize output data frames (which will be written to CSV)
             doc_df = pd.DataFrame(columns=doc_df_cols)
@@ -84,7 +89,7 @@ def main(text_file_path, excerpt_lengths, segment_lengths, samples_per_condition
                 output = create_sort_samples(doc_text, samples_per_condition, excerpt_len=el, segment_len=sl,
                                              segment_distance_bins=segment_distance_bins, seed=doc_id + el + sl,
                                              extra_samples=extra_n)
-                samples, segments, answers, segment_positions, excerpt_pos, args = output  # unpack the output
+                samples, segments, answers, segment_positions, excerpt_pos, _ = output  # unpack the output
                 dist_keys = list(samples.keys())
                 if n_samples is None:
                     n_samples = len(samples[segment_distance_bins[1]])
@@ -112,16 +117,36 @@ def main(text_file_path, excerpt_lengths, segment_lengths, samples_per_condition
                     segment_df = pd.concat([segment_df, seg_df], ignore_index=True)
                     del seg_df
                 excerpt_df = pd.concat([excerpt_df, ex_df], ignore_index=True)
-                del output, samples, segments, answers, segment_positions
+                del output, samples, segments, answers, segment_positions, excerpt_pos
                 del seg, seg_pos, segment_1, segment_2, seg1_pos, seg2_pos
                 del ex_df
 
-            segment_df.to_csv(f"{output_dir}/segments_{el}-s{sl}-n{n_samples}.csv")
-            excerpt_df.to_csv(f"{output_dir}/excerpts_{el}-s{sl}-n{n_samples}.csv")
-            # add metadata to docs (title)
-            doc_df.to_csv(f"{output_dir}/docs_{el}-s{sl}-n{n_samples}.csv")
-            print(f'Wrote excerpt, segment info to {output_dir}/*_{el}-s{sl}-n{n_samples}.csv')
+            if save_csv:
+                segment_df.to_csv(f"{output_dir}/segments_{el}-s{sl}-n{n_samples}.csv")
+                excerpt_df.to_csv(f"{output_dir}/excerpts_{el}-s{sl}-n{n_samples}.csv")
+                doc_df.to_csv(f"{output_dir}/docs_{el}-s{sl}-n{n_samples}.csv")
+                print(f'Wrote excerpt, segment info to {output_dir}/*_{el}-s{sl}-n{n_samples}.csv')
+            if save_hf:
+                merged = pd.merge(segment_df, excerpt_df, on=["doc_idx", "excerpt_idx"])
+                merged = pd.merge(merged, doc_df, on="doc_idx")
+                data_to_concat.append(merged)
 
+    if save_hf:
+        output_data = pd.concat(data_to_concat)
+        # Divide between validation and test data
+        n_test_samples = n_samples - n_val_samples
+        test = output_data[output_data["excerpt_idx"] < n_test_samples]
+        validation = output_data[output_data["excerpt_idx"] >= n_test_samples]
+
+        # Write the merged data to the output file in parquet format
+        parquet_path = f"{output_dir}/data"
+        os.makedirs(parquet_path, exist_ok=True)
+        test_output_file = f"{parquet_path}/test_txtsort.parquet"
+        val_output_file = f"{parquet_path}/validation_txtsort.parquet"
+        test.to_parquet(test_output_file)
+        print(f"Wrote {test_output_file}")
+        validation.to_parquet(val_output_file)
+        print(f"Wrote {val_output_file}")
 
 if __name__ == "__main__":
     # navigate to home directory
@@ -136,22 +161,37 @@ if __name__ == "__main__":
                         help="Excerpt length (in words). Excerpts are taken from the doc text, and contain the " +
                              "entirety of both segments that need to be ordered.")
     parser.add_argument('-sl', '--segment_len', type=int, nargs='+',
-                        default=[10],
+                        default=[20, 50],
                         help="Segment length (in words). Segments are taken from the excerpts.")
-    parser.add_argument('-ns', '--nsamples_per_cond', type=int,
-                        default=50)
+    parser.add_argument('-ns', '--nsamples_per_cond_test', type=int,
+                        default=100,
+                        help="Number of test samples to generate per combination of (document, excerpt length, "
+                             "segment_length).")
+    parser.add_argument('-ns_val', '--nsamples_per_cond_validation', type=int,
+                        default=10,
+                        help="Number of validation samples to generate per combination of (document, excerpt length, "
+                             "segment_length). Validation is used for prompt sweeps.")
     parser.add_argument('-o', '--output_path', type=str,
                         default='./data/docsort/',
                         help='Path to store the SORT CSV files')
     parser.add_argument('-s', '--store_arrays', type=bool,
                         default=True,
                         help='Whether or not to store the arrays of words from each document. Default is True.')
-    parser.add_argument('-p', '--generate_percent_extra', type=int,
+    parser.add_argument('-p', '--generate_percent_extra', type=float,
                         default=0.5,
                         help="Extra samples to generate (as a percentage of the total number per condition). This is " +
                              "needed so that the text samples will be roughly normally distributed across the " +
                              "the excerpt, and so that they begin at a sentence boundary.")
+    parser.add_argument('--output_csv', type=bool,
+                        default=True,
+                        help="Saves 3 separate CSV files for each excerpt and segment length")
+    parser.add_argument('--output_hf', action="store_true",
+                        help="Will save a single HuggingFace-compatible dataset containing all excerpt and segment "
+                             "lengths, in Parquet format.")
     args = parser.parse_args()
 
-    main(args.text_path, args.excerpt_len, args.segment_len, args.nsamples_per_cond,
-         args.output_path, args.store_arrays, args.generate_percent_extra)
+    assert args.output_csv or args.output_hf, "You must choose at least one output format!"
+
+    main(args.text_path, args.excerpt_len, args.segment_len,
+         args.nsamples_per_cond_test + args.nsamples_per_cond_validation, args.nsamples_per_cond_validation,
+         args.output_path, args.store_arrays, args.generate_percent_extra, args.output_csv, args.output_hf)
