@@ -129,6 +129,9 @@ def main(text_file_path, excerpt_lengths, segment_lengths, samples_per_condition
             if save_hf:
                 merged = pd.merge(segment_df, excerpt_df, on=["doc_idx", "excerpt_idx"])
                 merged = pd.merge(merged, doc_df, on="doc_idx")
+                # Add segment and excerpt lengths
+                merged["segment_length"] = merged["segment_1"].apply(lambda x: len(x.split()))
+                merged["excerpt_length"] = merged["excerpt_text"].apply(lambda x: len(x.split()))
                 data_to_concat.append(merged)
 
     if save_hf:
