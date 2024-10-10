@@ -68,10 +68,7 @@ def main(text_file_path, excerpt_lengths, segment_lengths, samples_per_condition
     for el in excerpt_lengths:
         for sl in segment_lengths:
             data_to_save = {b: dict() for b in doc_ids}
-            if el < 5000:
-                segment_distance_bins = [sl, el // 2]
-            else:
-                segment_distance_bins = [sl, el // 2]
+            segment_distance_bins = [sl, el // 2]  # User may wish to change these distance bins
             n_bins = len(segment_distance_bins)
             # Initialize output data frames (which will be written to CSV)
             doc_df = pd.DataFrame(columns=doc_df_cols)
@@ -142,9 +139,10 @@ def main(text_file_path, excerpt_lengths, segment_lengths, samples_per_condition
         validation = output_data[output_data["excerpt_idx"] >= n_test_samples]
 
         # Write the merged data to the output file in parquet format
-        output_file = Path(f"{output_dir}/txtsort")
-        test_output_file = str(output_file.parent / ("test_" + str(output_file.stem) + ".parquet"))
-        val_output_file = str(output_file.parent / ("validation_" + str(output_file.stem) + ".parquet"))
+        parquet_path = f"{output_dir}/data"
+        os.makedirs(parquet_path, exist_ok=True)
+        test_output_file = f"{parquet_path}/test_txtsort.parquet"
+        val_output_file = f"{parquet_path}/validation_txtsort.parquet"
         test.to_parquet(test_output_file)
         print(f"Wrote {test_output_file}")
         validation.to_parquet(val_output_file)
@@ -163,7 +161,7 @@ if __name__ == "__main__":
                         help="Excerpt length (in words). Excerpts are taken from the doc text, and contain the " +
                              "entirety of both segments that need to be ordered.")
     parser.add_argument('-sl', '--segment_len', type=int, nargs='+',
-                        default=[10, 20],
+                        default=[20, 50],
                         help="Segment length (in words). Segments are taken from the excerpts.")
     parser.add_argument('-ns', '--nsamples_per_cond_test', type=int,
                         default=100,
