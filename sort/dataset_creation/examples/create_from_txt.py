@@ -63,10 +63,14 @@ def main(text_file_path, excerpt_lengths, segment_lengths, samples_per_condition
     extra_n = extra_n - ((extra_n + samples_per_condition) % 2)
 
     if save_hf:
-        data_to_concat = []  # For keeping all excerpt length, segment length combinations
+        parquet_path = f"{output_dir}/data"
+        os.makedirs(parquet_path, exist_ok=True)
 
     for el in excerpt_lengths:
         for sl in segment_lengths:
+            if save_hf:
+                # for each segment and excerpt length combination, we will save a single set of data
+                data_to_concat = []
             data_to_save = {b: dict() for b in doc_ids}
             segment_distance_bins = [sl, el // 2]  # User may wish to change these distance bins
             n_bins = len(segment_distance_bins)
@@ -134,22 +138,20 @@ def main(text_file_path, excerpt_lengths, segment_lengths, samples_per_condition
                 merged["excerpt_length"] = merged["excerpt_text"].apply(lambda x: len(x.split()))
                 data_to_concat.append(merged)
 
-    if save_hf:
-        output_data = pd.concat(data_to_concat)
-        # Divide between validation and test data
-        n_test_samples = n_samples - n_val_samples
-        test = output_data[output_data["excerpt_idx"] < n_test_samples]
-        validation = output_data[output_data["excerpt_idx"] >= n_test_samples]
+        if save_hf:
+            output_data = pd.concat(data_to_concat)
+            # Divide between validation and test data
+            n_test_samples = n_samples - n_val_samples
+            test = output_data[output_data["excerpt_idx"] < n_test_samples]
+            validation = output_data[output_data["excerpt_idx"] >= n_test_samples]
 
-        # Write the merged data to the output file in parquet format
-        parquet_path = f"{output_dir}/data"
-        os.makedirs(parquet_path, exist_ok=True)
-        test_output_file = f"{parquet_path}/test_txtsort.parquet"
-        val_output_file = f"{parquet_path}/validation_txtsort.parquet"
-        test.to_parquet(test_output_file)
-        print(f"Wrote {test_output_file}")
-        validation.to_parquet(val_output_file)
-        print(f"Wrote {val_output_file}")
+            # Write the merged data to the output file in parquet format
+            test_output_file = f"{parquet_path}/test_e{el}_s{sl}.parquet"
+            val_output_file = f"{parquet_path}/validation_e{el}_s{sl}.parquet"
+            test.to_parquet(test_output_file)
+            print(f"Wrote {test_output_file}")
+            validation.to_parquet(val_output_file)
+            print(f"Wrote {val_output_file}")
 
 if __name__ == "__main__":
     # navigate to home directory
