@@ -131,21 +131,20 @@ def main(text_file_path, excerpt_lengths, segment_lengths, samples_per_condition
                 # Add segment and excerpt lengths
                 merged["segment_length"] = merged["segment_1"].apply(lambda x: len(x.split()))
                 merged["excerpt_length"] = merged["excerpt_text"].apply(lambda x: len(x.split()))
+                # if save_hf:
+                # Divide between validation and test data
+                n_test_samples = n_samples - n_val_samples
+                test = merged[merged["excerpt_idx"] < n_test_samples]
+                validation = merged[merged["excerpt_idx"] >= n_test_samples]
 
-        if save_hf:
-            # Divide between validation and test data
-            n_test_samples = n_samples - n_val_samples
-            test = merged[merged["excerpt_idx"] < n_test_samples]
-            validation = merged[merged["excerpt_idx"] >= n_test_samples]
-
-            # Write the merged data to the output file in parquet format
-            test_output_file = f"{parquet_path}/test_e{el}_s{sl}.parquet"
-            val_output_file = f"{parquet_path}/validation_e{el}_s{sl}.parquet"
-            test.to_parquet(test_output_file)
-            print(f"Wrote {test_output_file}")
-            validation.to_parquet(val_output_file)
-            print(f"Wrote {val_output_file}")
-            del merged
+                # Write the merged data to the output file in parquet format
+                test_output_file = f"{parquet_path}/test_e{el}_s{sl}.parquet"
+                val_output_file = f"{parquet_path}/validation_e{el}_s{sl}.parquet"
+                test.to_parquet(test_output_file)
+                print(f"Wrote {test_output_file}")
+                validation.to_parquet(val_output_file)
+                print(f"Wrote {val_output_file}")
+                del merged
 
 
 if __name__ == "__main__":
