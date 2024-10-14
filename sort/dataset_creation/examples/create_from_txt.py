@@ -14,7 +14,6 @@ import argparse
 import numpy as np
 import os
 import pandas as pd
-from pathlib import Path
 
 from sort.dataset_creation.create_sort_text_dataset import create_sort_samples
 
@@ -63,11 +62,11 @@ def main(text_file_path, excerpt_lengths, segment_lengths, samples_per_condition
     extra_n = extra_n - ((extra_n + samples_per_condition) % 2)
 
     if save_hf:
-        data_to_concat = []  # For keeping all excerpt length, segment length combinations
+        parquet_path = f"{output_dir}/data"
+        os.makedirs(parquet_path, exist_ok=True)
 
     for el in excerpt_lengths:
         for sl in segment_lengths:
-            data_to_save = {b: dict() for b in doc_ids}
             segment_distance_bins = [sl, el // 2]  # User may wish to change these distance bins
             n_bins = len(segment_distance_bins)
             # Initialize output data frames (which will be written to CSV)
@@ -129,35 +128,32 @@ def main(text_file_path, excerpt_lengths, segment_lengths, samples_per_condition
             if save_hf:
                 merged = pd.merge(segment_df, excerpt_df, on=["doc_idx", "excerpt_idx"])
                 merged = pd.merge(merged, doc_df, on="doc_idx")
-                data_to_concat.append(merged)
+                # Add segment and excerpt lengths
+                merged["segment_length"] = merged["segment_1"].apply(lambda x: len(x.split()))
+                merged["excerpt_length"] = merged["excerpt_text"].apply(lambda x: len(x.split()))
+                # if save_hf:
+                # Divide between validation and test data
+                n_test_samples = n_samples - n_val_samples
+                test = merged[merged["excerpt_idx"] < n_test_samples]
+                validation = merged[merged["excerpt_idx"] >= n_test_samples]
 
-    if save_hf:
-        output_data = pd.concat(data_to_concat)
-        # Divide between validation and test data
-        n_test_samples = n_samples - n_val_samples
-        test = output_data[output_data["excerpt_idx"] < n_test_samples]
-        validation = output_data[output_data["excerpt_idx"] >= n_test_samples]
+                # Write the merged data to the output file in parquet format
+                test_output_file = f"{parquet_path}/test_e{el}_s{sl}.parquet"
+                val_output_file = f"{parquet_path}/validation_e{el}_s{sl}.parquet"
+                test.to_parquet(test_output_file)
+                print(f"Wrote {test_output_file}")
+                validation.to_parquet(val_output_file)
+                print(f"Wrote {val_output_file}")
+                del merged
 
-        # Write the merged data to the output file in parquet format
-        parquet_path = f"{output_dir}/data"
-        os.makedirs(parquet_path, exist_ok=True)
-        test_output_file = f"{parquet_path}/test_txtsort.parquet"
-        val_output_file = f"{parquet_path}/validation_txtsort.parquet"
-        test.to_parquet(test_output_file)
-        print(f"Wrote {test_output_file}")
-        validation.to_parquet(val_output_file)
-        print(f"Wrote {val_output_file}")
 
 if __name__ == "__main__":
-    # navigate to home directory
-    os.chdir(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))))
-
     parser = argparse.ArgumentParser()
     parser.add_argument('-ta', '--text_path', type=str,
                         default=f"./data/text/",
                         help="Path to a directory with .txt files")
     parser.add_argument('-el', '--excerpt_len', type=int, nargs='+',
-                        default=[250, 500],
+                        default=[250, 1000],
                         help="Excerpt length (in words). Excerpts are taken from the doc text, and contain the " +
                              "entirety of both segments that need to be ordered.")
     parser.add_argument('-sl', '--segment_len', type=int, nargs='+',

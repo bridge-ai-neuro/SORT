@@ -30,7 +30,8 @@ generate two files for each book:
 (2) {book_id}_chapter_info.npy: a metadata dictionary containing information about the chapters in the book. this
                                 allows us to generate the BookSORT samples excluding the chapter titles.
 
-
+NOTE: Due to differences in random seed behavior, this may not exactly reproduce the same segments and excerpts as in
+our dataset shared on HuggingFace.
 """
 import argparse
 from sort.dataset_creation.create_sort_text_dataset import create_sort_samples
@@ -40,13 +41,15 @@ import os
 import pandas as pd
 
 
-def main(book_info_path, book_list, excerpt_lengths, segment_lengths, samples_per_condition, output_dir):
+def main(book_info_path, book_list, excerpt_lengths, segment_lengths, samples_per_condition, n_val_samples, output_dir):
     # Checking the directories given as inputs
     assert any(['words.npy' in fname for fname in os.listdir(book_info_path)]), \
         f"No *words.npy files found in {book_info_path}!"  # Check that we have some word arrays
     assert any(['chapter_info.npy' in fname for fname in os.listdir(book_info_path)]), \
         f"No *chapter_info.npy files found in {book_info_path}!"  # Check that we have chapter info
     os.makedirs(output_dir, exist_ok=True)  # Make the output directory if needed
+    parquet_path = f"{output_dir}/data"  # Also make the subdirectory for the parquet files
+    os.makedirs(parquet_path, exist_ok=True)
 
     # Other variables we will use in dataset creation
     n_samples = None
@@ -58,12 +61,10 @@ def main(book_info_path, book_list, excerpt_lengths, segment_lengths, samples_pe
 
     for el in excerpt_lengths:
         for sl in segment_lengths:
-            data_to_save = {b: dict() for b in book_list}
             if el < 5000:
                 segment_distance_bins = [sl, el // 4, el // 3, el // 2, int(el // 1.25)]
             else:
                 segment_distance_bins = [sl, 1000, el // 4, el // 2, int(el // 1.25)]
-            n_bins = len(segment_distance_bins)
             # Initialize output data frames (which will be written to CSV)
             book_df = pd.DataFrame(columns=book_df_cols)
             excerpt_df = pd.DataFrame(columns=excerpt_df_cols)
@@ -86,7 +87,7 @@ def main(book_info_path, book_list, excerpt_lengths, segment_lengths, samples_pe
                 print(f"PROCESSING book {i} {book_id} e{el},s{sl}")
                 output = create_sort_samples(book_text, samples_per_condition, excerpt_len=el, segment_len=sl,
                                              segment_distance_bins=segment_distance_bins, seed=book_id + el + sl,
-                                             extra_samples=26)
+                                             extra_samples=50)
                 samples, segments, answers, segment_positions, excerpt_pos, args = output  # unpack the output
                 dist_keys = list(samples.keys())
                 if n_samples is None:
@@ -123,9 +124,24 @@ def main(book_info_path, book_list, excerpt_lengths, segment_lengths, samples_pe
             book_df.to_csv(f"{output_dir}/books_{el}-s{sl}-n{n_samples}.csv")
             print(f'Wrote excerpt, segment info to {output_dir}/*_{el}-s{sl}-n{n_samples}.csv')
 
+            # Now write to parquet files -- this is for HuggingFace-compatible output
+            merged = pd.merge(segment_df, excerpt_df, on=["book_idx", "excerpt_idx"])
+            merged = pd.merge(merged, book_df, on="book_idx")
+            # Add segment and excerpt lengths
+            merged["segment_length"] = merged["segment_1"].apply(lambda x: len(x.split()))
+            merged["excerpt_length"] = merged["excerpt_text"].apply(lambda x: len(x.split()))
+            n_test_samples = n_samples - n_val_samples
+            test = merged[merged["excerpt_idx"] < n_test_samples]
+            validation = merged[merged["excerpt_idx"] >= n_test_samples]
+            test_output_file = f"{parquet_path}/test_e{el}_s{sl}.parquet"
+            val_output_file = f"{parquet_path}/validation_e{el}_s{sl}.parquet"
+            test.to_parquet(test_output_file)
+            validation.to_parquet(val_output_file)
+            print(f"Wrote data to {test_output_file} and {val_output_file}")
+
+
 
 if __name__ == "__main__":
-    os.chdir(os.path.abspath(__file__))
     parser = argparse.ArgumentParser()
     parser.add_argument('-ta', '--text_array_path', type=str,
                         default=f"./data/pg/text_arrays",
@@ -141,11 +157,17 @@ if __name__ == "__main__":
                         default=[20, 50],
                         help="Segment length (in words). Segments are taken from the excerpts.")
     parser.add_argument('-ns', '--nsamples_per_cond', type=int,
-                        default=110)
+                        default=110,
+                        help="Number of test samples to generate per combination of (document, excerpt length, "
+                             "segment_length).")
+    parser.add_argument('-nv', '--n_validation_samples', type=int,
+                        default=10,
+                        help="Number of validation samples to generate per combination of (document, excerpt length, "
+                             "segment_length). Validation is used for prompt sweeps.")
     parser.add_argument('-o', '--output_path', type=str,
                         default='./data/booksort/',
                         help='Path to store the SORT CSV files')
     args = parser.parse_args()
 
     main(args.text_array_path, args.doc_ids, args.excerpt_len, args.segment_len, args.nsamples_per_cond,
-         args.output_path)
+         args.n_validation_samples, args.output_path)
