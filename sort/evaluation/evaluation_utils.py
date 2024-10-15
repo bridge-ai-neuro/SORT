@@ -8,6 +8,7 @@ import pandas as pd
 import tiktoken
 import torch
 
+
 def load_model_tokenizer(model_path, cfg):
     print(f"Loading model: {model_path}")
     if cfg.api == 'openai':
@@ -364,27 +365,25 @@ def get_answer_prob(logprobs, tokens, answer_list, api):
 
     return prob_list
 
+
 class LogProb():
     def __init__(self, value):
         self.logprob = value
 
 
-def calc_accuracy(task_type, correct_order, label_list, output_dir):
+def calc_accuracy(task_type, label_list, output_dir):
     """
     task_type: "first" or "second"
-    in_context: boolean
-    correct_order: order of data files for plotting
-    label_list: e.g. ["A","B"]
+    label_list: e.g. ["A", "B"]
     """
     folder_path = f"{output_dir}/results"
     files = os.listdir(folder_path)
-    files = [c + "_" + files[0].split("csv_")[1] for c in correct_order]
     corrects = []
     A_frequencies = []
 
     for file in files:
         results_name = os.path.join(folder_path,file)
-        df = pd.read_csv(results_name,index_col=0)
+        df = pd.read_csv(results_name, index_col=0)
         df["ground_truth"] = df[f"{label_list[0]}_is_{task_type}"].apply(lambda x: [label_list[1],label_list[0]][x])
         df["correct"] = df["ground_truth"] == df["answer"]
         corrects.append((file.split(".csv")[0], df["correct"].values))
@@ -395,4 +394,3 @@ def calc_accuracy(task_type, correct_order, label_list, output_dir):
         means.append(mean)
 
     return np.mean(means), np.mean(A_frequencies)
-
