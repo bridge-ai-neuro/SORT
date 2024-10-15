@@ -1,18 +1,13 @@
 import os
 import hydra
 import logging
-import numpy as np
 import pandas as pd
 import shutil
 import time
-from evaluation_utils import load_model_tokenizer, llm_generate, parse_output, parse_str_response, parse_for_results, parse_str_response_openai, get_answer_prob, logprob_logging, huggingface_inference
-from analyze_results import plot_accuracy
+from evaluation_utils import load_model_tokenizer, llm_generate, parse_for_results, calc_accuracy
 import torch
 import gc
-from vllm import LLM, SamplingParams
 from vllm.model_executor.parallel_utils.parallel_state import destroy_model_parallel
-from transformers import AutoTokenizer, AutoModelForCausalLM, GenerationConfig
-from openai import OpenAI
 
 log = logging.getLogger(__name__)
 
@@ -21,6 +16,7 @@ log = logging.getLogger(__name__)
 #torch.backends.cuda.enable_flash_sdp(False)
 os.environ['TRANSFORMERS_OFFLINE'] = '1'
 # os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+
 
 @hydra.main(version_base=None, config_path="conf", config_name="config")
 def experiment(cfg):
@@ -250,9 +246,7 @@ def experiment(cfg):
     # run analyses (incl. prompt evaluation if cfg.prompt_eval)
     if cfg.run_analysis:
         results_filepath = [os.path.join(results_folder, f'{suffix}_{cfg.model_name}_results.csv') for suffix in cfg.suffixes_to_include]
-        accuracy, percentage_A = plot_accuracy(model_name=cfg.model_name,
-                                               task_type=cfg.task_type,
-                                               in_context=cfg.in_context,
+        accuracy, percentage_A = calc_accuracy(task_type=cfg.task_type,
                                                correct_order=cfg.suffixes_to_include,
                                                label_list=cfg.label_list,
                                                output_dir=hydra.core.hydra_config.HydraConfig.get().runtime.output_dir)
@@ -298,6 +292,7 @@ def experiment(cfg):
     except:
         log.error("Could not clear GPU memory properly.")
     return accuracy
+
 
 if __name__ == '__main__':
     experiment()
