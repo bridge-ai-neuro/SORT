@@ -6,90 +6,7 @@ SORT presents models with two segments of text from a continuous sequence, like 
 #### Dataset Link
 <!-- info: Provide a link to the dataset: -->
 <!-- width: half -->
-[TODO Dataset Link](TODOLINK)
-
-<!--- FILL IN AFTER SUBMISSION -->
-#### Data Card Author(s)
-<!-- info: Select **one role per** Data Card Author:
-(Usage Note: Select the most appropriate choice to describe the author's role
-in creating the Data Card.) -->
-<!-- width: half -->
-- **Name, Team:** (Owner / Contributor / Manager)
-
-## Authorship
-### Publishers
-#### Publishing Organization(s)
-<!-- scope: telescope -->
-<!-- info: Provide the names of the institution or organization responsible for publishing the dataset: -->
-Organization Name
-
-#### Industry Type(s)
-<!-- scope: periscope -->
-<!-- info: Select **all applicable** industry types to which the publishing organizations belong: -->
-<!--- FILL IN AFTER SUBMISSION
-- Corporate - Tech
-- Corporate - Non-Tech (please specify)
-- Academic - Tech
-- Academic - Non-Tech (please specify)
-- Not-for-profit - Tech
-- Not-for-profit - Non-Tech (please specify)
-- Individual (please specify)
-- Others (please specify)
--->
-
-#### Contact Detail(s)
-<!-- scope: microscope -->
-<!-- info: Provide publisher contact details: -->
-<!--- FILL IN AFTER SUBMISSION
-- **Publishing POC:** Provide the name for a POC for this dataset's publishers
-- **Affiliation:** Provide the POC's institutional affiliation
-- **Contact:** Provide the POC's contact details
-- **Mailing List:** Provide a mailing list if available
-- **Website:** Provide a website for the dataset if available
--->
-
-### Dataset Owners
-#### Team(s)
-<!-- scope: telescope -->
-<!-- info: Provide the names of the groups or team(s) that own the dataset: -->
-Name of Group or Team
-
-#### Contact Detail(s)
-<!-- scope: periscope -->
-<!-- info: Provide pathways to contact dataset owners: -->
-<!--- FILL IN AFTER SUBMISSION
-- **Dataset Owner(s):** Provide the names of the dataset owners
-- **Affiliation:** Provide the affiliation of the dataset owners
-- **Contact:** Provide the email of the dataset owner
-- **Group Email:** Provide a link to the mailing-list@server.com for the dataset owner team
-- **Website:** Provide a link to the website for the dataset owner team
--->
-
-#### Author(s)
-<!-- scope: microscope -->
-<!-- info: Provide the details of all authors associated with the dataset:
-(Usage Note: Provide the affiliation and year if different from publishing
-institutions or multiple affiliations.) -->
-- Name, Title, Affiliation, YYYY
-
-### Funding Sources
-#### Institution(s)
-<!-- scope: telescope -->
-<!-- info: Provide the names of the funding institution(s): -->
-- Name of Institution
-
-#### Funding or Grant Summary(ies)
-<!-- scope: periscope -->
-<!-- width: full -->
-<!-- info: Provide a short summary of programs or projects that may have funded
-the creation, collection, or curation of the dataset.
-Use additional notes to capture any other relevant information or
-considerations. -->
-*For example, Institution 1 and institution 2 jointly funded this dataset as a
-part of the XYZ data program, funded by XYZ grant awarded by institution 3 for
-the years YYYY-YYYY.*
-
-Summarize here. Link to documents if available.
+[BookSORT on Huggingface-Datasets](https://huggingface.co/datasets/memari/booksort)
 
 ## Dataset Overview
 
@@ -166,9 +83,9 @@ addressed.
 <!-- info: Provide details about **this** version of the dataset: -->
 **Current Version:** 1.0
 
-**Last Updated:** 05/2024
+**Last Updated:** 10/2024
 
-**Release Date:** 06/2024
+**Release Date:** 10/2024
 
 #### Maintenance Plan
 <!-- scope: microscope -->
@@ -197,12 +114,13 @@ been designed for:<br><br>(Usage Note: Use comma-separated keywords.) -->
 
 (Usage Note: use this to describe the problem space and corresponding
 motivations for the dataset.) -->
-BookSORT was created to accompany the paper introducing the Sequence Order Recall Task (SORT). The primary motivation was to evaluate several state-of-the-art LLMs on the task. It is shared for reproducibility purposes.
+BookSORT was created to accompany the paper introducing the Sequence Order Recall Task (SORT). The primary motivation was to provide a task and dataset to evaluate episodic memory in state of the art LLMs.
 
 ### Intended Use
 #### Dataset Use(s)
 <!-- scope: telescope -->
 <!-- info: Select **one**: -->
+- Evaluation as part of the development of memory-augmented architectures
 - Safe for research use
 
 #### Citation Guidelines
@@ -216,11 +134,14 @@ out for, or other relevant information or considerations. -->
 
 **BiBTeX:**
 ```
-@article{placeholder,
-  title={placeholder},
-  author={Last, First and Last, First and others},
-  conference={placeholder},
-  year={2020},
+@misc{pink2024assessingepisodicmemoryllms,
+      title={Assessing Episodic Memory in LLMs with Sequence Order Recall Tasks}, 
+      author={Mathis Pink and Vy A. Vo and Qinyuan Wu and Jianing Mu and Javier S. Turek and Uri Hasson and Kenneth A. Norman and Sebastian Michelmann and Alexander Huth and Mariya Toneva},
+      year={2024},
+      eprint={2410.08133},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2410.08133}, 
 }
 ```
 
@@ -235,15 +156,13 @@ out for, or other relevant information or considerations. -->
 <!-- scope: periscope -->
 <!-- info: Provide links that describe documentation to access this
 dataset: -->
-- [Dataset Website URL](TODO)
-- [GitHub URL](data/booksort)
+- [BookSORT](https://huggingface.co/datasets/memari/booksort)
 
 ## Provenance
 ### Collection
 #### Method(s) Used
 <!-- scope: telescope -->
 <!-- info: Select **all applicable** methods used to collect data: -->
-- API
 
 #### Methodology Detail(s)
 <!-- scope: periscope -->
@@ -345,7 +264,7 @@ considerations.
 
 (Usage Note: Duplicate and complete the
 following for each model.) -->
-A thorough report on evaluation can be found in the original accompanying [paper](TODOLINK).
+A thorough report on evaluation can be found in the original accompanying [paper](https://arxiv.org/abs/2410.08133).
 This report evaluated several state-of-the-art LLMs across different families: Mistral, Mixtral (Mixture of Experts models), Llama-2, Llama-3, Gemma, and OpenAI GPT models.
 
 <!---
