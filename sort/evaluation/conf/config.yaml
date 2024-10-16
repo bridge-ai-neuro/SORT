@@ -17,15 +17,12 @@ run_analysis: true # should generally be true
 n_logprobs: 20 # number of top answer logprobs to consider
 log_prompt_logprobs: false # needs to be false for long context and for prompt sweeps (requires much more GPU memory), also false for OpenAI
 
-# use only the last 10 samples for each distance condition to select the prompt
-prompt_eval: 1  # set to false for main eval
-
 # Paths (adapt to your system/setup):
 result_folder: "results"
 chat_template_directory: "./sort/evaluation/chat_templates" # Directory with .jinja files for different models
-data_path: "./data/booksort" # Directory with .csv files
+data_path: "./data/booksort" # Directory with .csv files. Not used if data_from_hf is true (i.e. loading data from HuggingFace Hub instead of local csv files)
 model_paths_csv: "./sort/evaluation/model_paths.csv" # csv file with mapping from model_name (str) to model_path (str). For new HF models, simply add a new entry where the model_path is e.g. "google/gemma-7b"
-prompt_eval_csv: "./sort/evaluation/model_prompt_results.csv" # This file does not have to exist prior to running experiments. Only used/accessed for the prompt sweep.
+prompt_eval_csv: "./sort/evaluation/model_prompt_results.csv" # This file does not have to exist prior to running experiments. Only used/accessed if prompt_eval is true (i.e. for the prompt sweep)
 download_path: "/home/USERID/.cache/huggingface/hub/" # Where to store new models from HF
 
 # GPU-setup (adapt for multi-gpu setups)
@@ -45,8 +42,13 @@ task_type: "first" # Whether the task is to answer which is first or second/last
 sample_n_tokens: 1 # Number of tokens to generate. Allow this to be >1 in case coherent text is generated
 label_list: ["A", "B"]
 
+prompt_eval: false # set to false for main eval. if true, writes prompt sweep results to a csv and only takes the validation subset.
+
 # Data selection. Which parts of the data to evaluate (to exclude books, excerpt lengths etc.)
+data_from_hf: true # load dataset from HuggingFace hub. if false, will look for local CSV files
 min_excerpt_index: 0 # only use excerpt indices greater equal this
 max_excerpt_index: 100 # only use excerpt indices lower than this (i.e. first 100 samples)
 texts_to_include: [69087, 72578, 72600, 72869, 72958, 72963, 72972, 73017, 73042] # ids of text documents to include
-suffixes_to_include: ["250-s50-n110.csv", "250-s20-n110.csv", "1000-s50-n110.csv", "1000-s20-n110.csv", "2500-s50-n110.csv","2500-s20-n110.csv", "10000-s50-n110.csv", "10000-s20-n110.csv", "20000-s50-n110.csv", "20000-s20-n110.csv"]
+excerpt_lengths: [250, 250, 1000, 1000, 2500, 2500, 10000, 10000, 20000, 20000] # excerpt lengths to use. should match length of segment_lengths list below.
+segment_lengths: [20, 50, 20, 50, 20, 50, 20, 50, 20, 50] # segment lengths to use. should match length of excerpt_lengths list above.
+csv_max_sample: 110 # if loading data from CSV files, this is the max excerpt index in that file.

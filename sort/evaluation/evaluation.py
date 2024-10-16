@@ -18,6 +18,32 @@ os.environ['TRANSFORMERS_OFFLINE'] = '1'
 # os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 
+def load_hf_dataset(cfg):
+    import datasets
+    if cfg.prompt_eval:
+        data = datasets.load_dataset("memari/booksort", split="validation")
+    else:
+        data = datasets.load_dataset("memari/booksort")
+        data = datasets.concatenate_datasets([data['test'], data['validation']])
+    log.info("Loaded BookSORT data from HuggingFace")
+    return data
+
+
+def load_csv_dataset(cfg, excerpt_len, segment_len):
+    n = cfg.csv_max_sample
+    suffix = f"{excerpt_len}-s{segment_len}-n{n}.csv"
+    books_df = pd.read_csv(os.path.join(cfg.data_path, "books_" + suffix), index_col=0)
+    excerpts_df = pd.read_csv(os.path.join(cfg.data_path, "excerpts_" + suffix), index_col=0)
+    segments_df = pd.read_csv(os.path.join(cfg.data_path, "segments_" + suffix), index_col=0)
+    log.info("Loaded BookSORT data from local CSV files")
+    merged = pd.merge(segments_df, excerpts_df, on=["book_idx", "excerpt_idx"])
+    merged = pd.merge(merged, books_df, on="book_idx")
+    # filter for only particular books
+    merged = pd.concat([merged[(merged["book_idx"] == include_idx)] for include_idx in cfg.texts_to_include],
+                       axis=0)
+    return merged, suffix[:-4]
+
+
 @hydra.main(version_base=None, config_path="conf", config_name="config")
 def experiment(cfg):
     # determine the type of model & import libraries accordingly
@@ -65,7 +91,7 @@ def experiment(cfg):
     else:
         chat_template_name = ""
     if not cfg.overwrite_chat_template:
-        chat_template_name=""
+        chat_template_name = ""
     # overwrite chat template only if mistral or llama is in model name.
     if not chat_template_name == "":
         with open(os.path.join(cfg.chat_template_directory, chat_template_name), "r") as f:
@@ -95,159 +121,155 @@ def experiment(cfg):
     time_1 = time.time()
     print(f'--- Model loaded: {time_1 - start_time} seconds ---')
 
-    data_dir = cfg.data_path
-    files = os.listdir(data_dir)
-    files = [f.replace("segments_","").replace("books_","").replace("excerpts_","") for f in files]
-    suffixes = list(set(files))
-    
-    print(f'found data file suffixes: {suffixes}')
-    for suffix in suffixes:
-        if suffix in cfg.suffixes_to_include:
-            all_results = []
-            time_file_start = time.time()
-            
-            books_df = pd.read_csv(os.path.join(data_dir, "books_"+suffix), index_col=0)
-            excerpts_df = pd.read_csv(os.path.join(data_dir, "excerpts_"+suffix), index_col=0)
-            segments_df = pd.read_csv(os.path.join(data_dir, "segments_"+suffix), index_col=0)
-            # filter for only particular books
-            segments_df = pd.concat([segments_df[(segments_df["book_idx"]==include_idx)] for include_idx in cfg.texts_to_include], axis=0)
+    if cfg.data_from_hf:
+        dataset = load_hf_dataset(cfg)
 
-            print(f"--- STARTING run on file {suffix}! ---")
-            batch_prompts = []
-            batch_segments = []
-            batch_rows = []
-            for idx, row in segments_df.iterrows():
-                # only look at the first N excerpts in the data (e.g. to use the last 10 for something else)
-                if row["excerpt_idx"]<cfg.max_excerpt_index and row["excerpt_idx"]>=cfg.min_excerpt_index:
-                    book_idx = row["book_idx"]
-                    excerpt_idx = row["excerpt_idx"]
-                    segment_1 = row["segment_1"]
-                    segment_2 = row["segment_2"]
-                    present_seg1_first = row["present_seg1_first"]
-                    excerpt = excerpts_df[(excerpts_df["book_idx"] == book_idx)&(excerpts_df["excerpt_idx"]==excerpt_idx)].iloc[0]["excerpt_text"]
-                    book_title = books_df[books_df["book_idx"]==book_idx]["book_title"].iloc[0]
+    assert len(cfg.excerpt_lengths) == len(cfg.segment_lengths), \
+        "In config, excerpt_lengths field should be the same length list as segment_lengths"
+    # Loop over the excerpt & segment lengths that are specified in the cfg
+    for elen, slen in zip(cfg.excerpt_lengths, cfg.segment_lengths):
+        all_results = []
+        time_file_start = time.time()
+        if cfg.data_from_hf:
+            data = dataset.filter(lambda ex: ex["book_idx"] in cfg.texts_to_include
+                                  and ex["excerpt_length"] == elen
+                                  and ex["segment_length"] == slen)
+            data = data.to_pandas()
+            data_descr = f"{elen}-s{slen}-hf"
+        else:
+            data, data_descr = load_csv_dataset(cfg, elen, slen)
 
-                    if present_seg1_first:
-                        segments_prompt = f"Segment {cfg.label_list[0]}: {segment_1} Segment {cfg.label_list[1]}:" \
-                                          f" {segment_2}\n"
-                        segments = [segment_1, segment_2]
-                    else:
-                        segments_prompt = f"Segment {cfg.label_list[0]}: {segment_2} Segment {cfg.label_list[1]}: {segment_1}\n"
-                        segments = [segment_2, segment_1]
+        print(f"--- STARTING run with excerpt length {elen}, segment length {slen}! ---")
+        batch_prompts = []
+        batch_segments = []
+        batch_rows = []
+        for idx, row in data.iterrows():
+            # only look at the first N excerpts in the data (e.g. to use the last 10 for something else)
+            if cfg.max_excerpt_index > row["excerpt_idx"] >= cfg.min_excerpt_index:
+                segment_1 = row["segment_1"]
+                segment_2 = row["segment_2"]
+                present_seg1_first = row["present_seg1_first"]
+                excerpt = row["excerpt_text"]
+                book_title = row["book_title"]
 
-                    # formulate the full prompt for chat/instruct models with the appropriate template.
-                    pre_excerpt_string = cfg.prompts.pre_excerpt.replace("<booktitle>", book_title).replace("<tasktype>", cfg.task_type).replace("<excerpt>",excerpt)
-                    pre_excerpt_string = pre_excerpt_string if cfg.in_context else ""
-                    post_excerpt_string = cfg.prompts.post_excerpt.replace("<booktitle>", book_title).replace("<tasktype>", cfg.task_type).replace("<segments>", segments_prompt)
-                    system_prompt = cfg.prompts.system_prompt.replace("<tasktype>", cfg.task_type)
-                    
-                    if not cfg.in_context:
-                        assert not len(pre_excerpt_string), "excerpt prefix should not be given in no-context condition."
-
-                    user_prompt = pre_excerpt_string + post_excerpt_string
-                    if cfg.use_system_prompt:
-                        messages = [{"role": "system", "content": system_prompt},
-                                    {"role": "user", "content": user_prompt}]
-                    else:
-                        messages = [{"role": "user", "content": user_prompt}]
-
-                    if cfg.api == 'openai':
-                        # DO NOT USE MODEL_ANSWER_PREFIX FOR OPEN AI MODELS
-                        full_prompt = messages
-                        tmp_txt = full_prompt[-1]['content']
-                        tmp_txt += " " if add_whitespace else ""
-                        # fill in segment labels in prompt
-                        tmp_txt = tmp_txt.replace("<label_list[0]>", cfg.label_list[0]).replace("<label_list[1]>", cfg.label_list[1])
-                        full_prompt[-1]['content'] = tmp_txt
-                    else:
-                        full_prompt = tokenizer.apply_chat_template(messages, tokenize=False,
-                                                                    add_generation_prompt=True)
-                        full_prompt += cfg.prompts.model_answer_prefix
-                        # e.g. llama models encode white space separately, while e.g. mistral/mixtral encode it as part of the next token. This needs to be checked for every model.
-                        full_prompt += " " if add_whitespace else ""
-                        # fill in segment labels in prompt
-                        full_prompt = full_prompt.replace("<label_list[0]>", cfg.label_list[0]).replace("<label_list[1]>", cfg.label_list[1])
-
-                    batch_prompts.append(full_prompt)
-                    batch_segments.append(segments)
-                    batch_rows.append(row)
-
-                    if len(batch_prompts) == cfg.batch_size:
-                        # Model generation
-                        generated_outputs = llm_generate(llm, batch_prompts, sampling_params, api=cfg.api,
-                                                         tokenizer=tokenizer)
-                        print(f'Generated for row {idx}')
-                        if cfg.api == 'hf':
-                            results_row = batch_rows[0]
-                            results_row["data"] = suffix
-                            results_row = parse_for_results(generated_outputs, tokenizer, cfg, results_row,
-                                                            response_tokens, bos_token)
-                            gc.collect()  # garbage collection for GPU memory
-                            all_results.append(results_row)
-                        else:
-                            # Iterate over batches if necessary
-                            for j, generation_output in enumerate(generated_outputs):
-                                results_row = batch_rows[j]
-                                results_row["data"] = suffix
-                                results_row = parse_for_results(generation_output, tokenizer, cfg, results_row,
-                                                                response_tokens,bos_token)
-                                gc.collect()  # garbage collection for GPU memory
-                                all_results.append(results_row)
-
-                        batch_prompts, batch_segments, batch_rows = [], [], []
-                    # WRITE INTERMEDIARY RESULTS
-                    if idx % 50 == 0:
-                        results_filepath = os.path.join(results_folder, f'{suffix}_{cfg.model_name}_results.csv')
-        
-                        dataframe = pd.DataFrame(all_results).reset_index()
-                        dataframe.to_csv(results_filepath)
-                        print(f"WROTE INTERMEDIATE RESULTS TO {results_filepath}")
-
-
-            # finish last batch (even if not a full batch)
-            if len(batch_prompts):
-                # Model generation
-                generated_outputs = llm_generate(llm, batch_prompts, sampling_params, api=cfg.api,
-                                                 tokenizer=tokenizer)
-                if cfg.api == 'hf':
-                    results_row = batch_rows[0]
-                    results_row["data"] = suffix
-                    results_row = parse_for_results(generated_outputs, tokenizer, cfg, results_row,
-                                                    response_tokens, bos_token)
-                    gc.collect()  # garbage collection for GPU memory
-                    all_results.append(results_row)
+                if present_seg1_first:
+                    segments_prompt = f"Segment {cfg.label_list[0]}: {segment_1} Segment {cfg.label_list[1]}:" \
+                                      f" {segment_2}\n"
+                    segments = [segment_1, segment_2]
                 else:
-                    # Iterate over batches if necessary
-                    for j, generation_output in enumerate(generated_outputs):
-                        results_row = batch_rows[j]
-                        results_row["data"] = suffix
-                        results_row = parse_for_results(generation_output, tokenizer, cfg, results_row,
+                    segments_prompt = f"Segment {cfg.label_list[0]}: {segment_2} Segment {cfg.label_list[1]}: {segment_1}\n"
+                    segments = [segment_2, segment_1]
+
+                # formulate the full prompt for chat/instruct models with the appropriate template.
+                pre_excerpt_string = cfg.prompts.pre_excerpt.replace("<booktitle>", book_title).replace("<tasktype>", cfg.task_type).replace("<excerpt>",excerpt)
+                pre_excerpt_string = pre_excerpt_string if cfg.in_context else ""
+                post_excerpt_string = cfg.prompts.post_excerpt.replace("<booktitle>", book_title).replace("<tasktype>", cfg.task_type).replace("<segments>", segments_prompt)
+                system_prompt = cfg.prompts.system_prompt.replace("<tasktype>", cfg.task_type)
+
+                if not cfg.in_context:
+                    assert not len(pre_excerpt_string), "excerpt prefix should not be given in no-context condition."
+
+                user_prompt = pre_excerpt_string + post_excerpt_string
+                if cfg.use_system_prompt:
+                    messages = [{"role": "system", "content": system_prompt},
+                                {"role": "user", "content": user_prompt}]
+                else:
+                    messages = [{"role": "user", "content": user_prompt}]
+
+                if cfg.api == 'openai':
+                    # DO NOT USE MODEL_ANSWER_PREFIX FOR OPEN AI MODELS
+                    full_prompt = messages
+                    tmp_txt = full_prompt[-1]['content']
+                    tmp_txt += " " if add_whitespace else ""
+                    # fill in segment labels in prompt
+                    tmp_txt = tmp_txt.replace("<label_list[0]>", cfg.label_list[0]).replace("<label_list[1]>", cfg.label_list[1])
+                    full_prompt[-1]['content'] = tmp_txt
+                else:
+                    full_prompt = tokenizer.apply_chat_template(messages, tokenize=False,
+                                                                add_generation_prompt=True)
+                    full_prompt += cfg.prompts.model_answer_prefix
+                    # e.g. llama models encode white space separately, while e.g. mistral/mixtral encode it as part of the next token. This needs to be checked for every model.
+                    full_prompt += " " if add_whitespace else ""
+                    # fill in segment labels in prompt
+                    full_prompt = full_prompt.replace("<label_list[0]>", cfg.label_list[0]).replace("<label_list[1]>", cfg.label_list[1])
+
+                batch_prompts.append(full_prompt)
+                batch_segments.append(segments)
+                batch_rows.append(row)
+
+                if len(batch_prompts) == cfg.batch_size:
+                    # Model generation
+                    generated_outputs = llm_generate(llm, batch_prompts, sampling_params, api=cfg.api,
+                                                     tokenizer=tokenizer)
+                    print(f'Generated for row {idx}')
+                    if cfg.api == 'hf':
+                        results_row = batch_rows[0]
+                        results_row["data"] = data_descr
+                        results_row = parse_for_results(generated_outputs, tokenizer, cfg, results_row,
                                                         response_tokens, bos_token)
                         gc.collect()  # garbage collection for GPU memory
                         all_results.append(results_row)
-                batch_prompts, batch_segments, batch_rows = [], [], []
+                    else:
+                        # Iterate over batches if necessary
+                        for j, generation_output in enumerate(generated_outputs):
+                            results_row = batch_rows[j]
+                            results_row["data"] = data_descr
+                            results_row = parse_for_results(generation_output, tokenizer, cfg, results_row,
+                                                            response_tokens,bos_token)
+                            gc.collect()  # garbage collection for GPU memory
+                            all_results.append(results_row)
 
-            if cfg.test:
-                print("full prompt:", full_prompt)
-                print(cfg.task_type)
-                print("Segment 1 is presented first (e.g. as A): ", results_row["present_seg1_first"])
-                label_list = cfg.label_list
-                print("correct_answer", [label_list[1],label_list[0]][results_row[f"{label_list[0]}_is_{cfg.task_type}"]])
-                print("model_answer", results_row["answer"])
+                    batch_prompts, batch_segments, batch_rows = [], [], []
+                # WRITE INTERMEDIARY RESULTS
+                if idx % 50 == 0:
+                    results_filepath = os.path.join(results_folder, f'{data_descr}_{cfg.model_name}_results.csv')
 
-            results_filepath = os.path.join(results_folder, f'{suffix}_{cfg.model_name}_results.csv')
+                    dataframe = pd.DataFrame(all_results).reset_index()
+                    dataframe.to_csv(results_filepath)
+                    print(f"WROTE INTERMEDIATE RESULTS TO {results_filepath}")
 
-            dataframe = pd.DataFrame(all_results).reset_index()
-            dataframe.to_csv(results_filepath)
-            print(f'This file takes:\n --- {time.time() - time_file_start} seconds ---')
+        # finish last batch (even if not a full batch)
+        if len(batch_prompts):
+            # Model generation
+            generated_outputs = llm_generate(llm, batch_prompts, sampling_params, api=cfg.api,
+                                             tokenizer=tokenizer)
+            if cfg.api == 'hf':
+                results_row = batch_rows[0]
+                results_row["data"] = data_descr
+                results_row = parse_for_results(generated_outputs, tokenizer, cfg, results_row,
+                                                response_tokens, bos_token)
+                gc.collect()  # garbage collection for GPU memory
+                all_results.append(results_row)
+            else:
+                # Iterate over batches if necessary
+                for j, generation_output in enumerate(generated_outputs):
+                    results_row = batch_rows[j]
+                    results_row["data"] = data_descr
+                    results_row = parse_for_results(generation_output, tokenizer, cfg, results_row,
+                                                    response_tokens, bos_token)
+                    gc.collect()  # garbage collection for GPU memory
+                    all_results.append(results_row)
+            del batch_prompts, batch_segments, batch_rows
+
+        if cfg.test:
+            print("full prompt:", full_prompt)
+            print(cfg.task_type)
+            print("Segment 1 is presented first (e.g. as A): ", results_row["present_seg1_first"])
+            label_list = cfg.label_list
+            print("correct_answer", [label_list[1],label_list[0]][results_row[f"{label_list[0]}_is_{cfg.task_type}"]])
+            print("model_answer", results_row["answer"])
+
+        results_filepath = os.path.join(results_folder, f'{data_descr}_{cfg.model_name}_results.csv')
+
+        dataframe = pd.DataFrame(all_results).reset_index()
+        dataframe.to_csv(results_filepath)
+        print(f'This file takes:\n --- {time.time() - time_file_start} seconds ---')
 
     print(f'--- {time.time() - time_1} seconds ---')
     
     # run analyses (incl. prompt evaluation if cfg.prompt_eval)
     if cfg.run_analysis:
-        results_filepath = [os.path.join(results_folder, f'{suffix}_{cfg.model_name}_results.csv') for suffix in cfg.suffixes_to_include]
         accuracy, percentage_A = calc_accuracy(task_type=cfg.task_type,
-                                               correct_order=cfg.suffixes_to_include,
                                                label_list=cfg.label_list,
                                                output_dir=hydra.core.hydra_config.HydraConfig.get().runtime.output_dir)
 
