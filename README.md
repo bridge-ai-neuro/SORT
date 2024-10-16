@@ -1,63 +1,41 @@
 # Sequence Order Recall Task (SORT) Evaluation Framework
 
-SORT is a first-of-a-kind evaluation method to test episodic-memory capabilities of models.
+SORT is the first evaluation method to test episodic-memory capabilities of LLMs.
 This is achieved by adapting recency judgments used in cognitive psychology to evaluate episodic memory in humans and 
 animals. In this task, a sequence is presented to a participant, and, after a delay, the participant is asked to 
-judge the order in which two segments of the sequence appeared. If the delay is long, this task evaluates lasting 
-long-term memory. In the case that the sequence is presented immediately before the ordering task, the task relies on 
-short-term memory. 
+recall the order in which two segments of the sequence appeared. 
 
-## Book-SORT dataset
-We create a first dataset with SORT, the `Book-SORT` dataset. This dataset comprises a set of 9 public domain books. The original book files can be found in `data/pg/full_text/`.
-The processed dataset (csv files) can be found [here](https://drive.google.com/drive/folders/1MxliwPm_-B717X_4xPJFSqc39BHjffTD?usp=drive_link) should be placed in `data/booksort/`.
 
-More information about this dataset can be found in the [`Book-SORT` dataset card](data/README.md).  
 
 ## Citation
-If you use SORT or Book-SORT in a publication, please cite our benchmark paper:
+If you use SORT or Book-SORT in your work, please cite our paper:
 ```
-@inproceedings{,
-    title = "Assessing Episodic Memory in LLMs with Sequence Order Recall Tasks",
-    authors = "Anonymous",
-    year = "2024",
-    url = "",
+@misc{pink2024assessingepisodicmemoryllms,
+      title={Assessing Episodic Memory in LLMs with Sequence Order Recall Tasks}, 
+      author={Mathis Pink and Vy A. Vo and Qinyuan Wu and Jianing Mu and Javier S. Turek and Uri Hasson and Kenneth A. Norman and Sebastian Michelmann and Alexander Huth and Mariya Toneva},
+      year={2024},
+      eprint={2410.08133},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2410.08133}, 
 }
 ```
 
 ## Installation
-In order to run the benchmark code we highly recommend installing the packages in the `requirements.txt` file inside a
-user defined environment:
+Install the requirements.txt in a new virtual environment (Python 3.10):
 ```shell
 pip install -r requirements.txt
-```
-FlashAttention needs to be installed with 
-```shell
 pip install flash-attn==0.2.4
 ```
-The installation of FlashAttention needs to be done on a machine with GPUs and cuda installed.
+The installation of FlashAttention needs to be done on a machine with cuda. Note that FlashAttention is not strictly necessary. To use newer versions of vllm, 
 
-## Dataset generation
-A similar version of the `Book-SORT` dataset can be created with the `sort/dataset_creation/run_booksort_creation.py` script. 
-First, it is necessary to preprocess the books with `sort/dataset_creation/preprocess_pg_books.py`.
-The preprocessed data and metadata for all books should be stored in `data/pg/text_arrays/`.
-This script will store the generated dataset in `data/data_csv_files/`.
+## 1. Prompt selection
+We find a prompt formulation that works well for a given model by evaluating on the validation set of Book-SORT.
+1. The model `<model_name>` should appear in the `sort/evaluation/model_paths.csv` file.
+2. The original set of prompt configs is stored in the folder `sort/evaluation/conf/prompts/` and can be extended with new prompt formulations for SORT.
+3. The config file `<config_yaml>` in which the model is specified should be stored in `sort/evaluation/conf/` as a yaml file.
 
-```shell
-python sort/dataset_creation/preprocess_pg_books.py
-python sort/dataset_creation/run_booksort_creation.py 
-```
-
-## Prompt selection
-Before evaluating a model, a prompt needs to be selected that works well for the model.
-For this step, the following things are needed: a config file, a model, a set of prompt configs, and the data for 
-running on those prompts.
-1. The model `<model_name>` should appear in the `sort/evaluation/model_paths.csv` file. This file serves as a mapping for model names to their local folder 
-and their libraries to run them (huggingface, vllm, or openai apis).
-2. The original set of prompt configs is stored in the folder `sort/evaluation/conf/prompts/`.
-3. The config file `<config_yaml>` should be stored in `sort/evaluation/conf/` as a yaml file. 
-4. The dataset should be stored in `data/`.
-
-In order to execute a prompt selection sweep, it is required to update the location where the Huggingface models
+In order to execute a prompt selection sweep, it is recommended to update the location where the Huggingface models
 are downloaded and stored to. This is done by configuring the `download_path` variable to the right directory in the 
 `<config_yaml>` file. 
 
@@ -66,53 +44,43 @@ To run the prompt sweep, use the following command:
 python sort/evaluation/evaluation.py --multirun --config-name <config_yaml> ++model_name=<model_name> ++min_excerpt_index=100 ++max_excerpt_index=120
 ```
 
-The results are stored in the file described in the `prompt_eval_csv` variable in the `<config_yaml>` file. 
-The best prompt is decided based on accuracy.
-In the case that accuracies are very close for two or more prompt formulations, it can be decided based on the 
-proportion of A vs B responses, which should be close to 0.5. 
+The results can be found in the file described in the `prompt_eval_csv` variable in the `<config_yaml>` file. 
 
-## Finetuning a model to insert parametric memory 
-In order to reproduce the finetuning process for the SORT experiment without in-context memory, please execute the follow the 
-instructions given in [the finetuning code](sort/finetuning/README.md). 
-
-
-## Evaluating a model
-Once the best prompt for a model is known, it is time to evaluate the model in the entire dataset.
-For this step, the following things are needed: a config file, a model, a prompt file, and the dataset.
-1. The model `<model_name>` should appear in the `sort/evaluation/model_paths.csv` file. This file serves as a mapping for model names to their local folder 
-and their libraries to run them (Huggingface, vLLM, or OpenAI apis).
-2. The prompt file `<prompt_yaml>` should be stored in `sort/evaluation/conf/prompts/` as a yaml file.
-3. The config file `<config_yaml>` should be stored in `sort/evaluation/conf/` as a yaml file. 
-4. The dataset should be stored in `data/`.
-
-In order to execute evaluate a model, it is required to update the location where the Huggingface models
-are downloaded and stored to. This is done by configuring the `download_path` variable to the right directory in the 
-`<config_yaml>` file. 
-
-### Parametric Memory evaluation
-To run the evaluation of text-specific parametric memory in a model, use the following command:
-```shell
-python sort/evaluation/evaluation.py --config-name <config_yaml> ++model_name=<model_name> prompts=<prompt_yaml> ++prompt_eval=false ++in_context=false
-```
-
-### In-context Memory evaluation
-To run the evaluation of a model's ability to retrieve information from previously (in the same prompt) encoded activitation slots, use the following command:
+## 2. Evaluating a model
 ```shell
 python sort/evaluation/evaluation.py --config-name <config_yaml> ++model_name=<model_name> prompts=<prompt_yaml> ++prompt_eval=false ++in_context=true
 ```
+1. The model `<model_name>` needs to be in `sort/evaluation/model_paths.csv`
+2. The prompt config file `<prompt_yaml>` needs to be `sort/evaluation/conf/prompts/` as a yaml file.
+3. The config file `<config_yaml>` needs to be in `sort/evaluation/conf/` as a yaml file.
 
-Results are stored in folders inside `sort/evaluation/outputs/`.
-The model's baseline performance is obtained by running the notebook `ltm_analysis/LTM_analysis_final.ipynb`.
-This presents the summary statistics and the plot in the paper.
+# Creating a new SORT dataset
+The `sort/dataset_creation/run_booksort_creation.py` script allows to create custom SORT datasets. 
+For this, preprocessed data and metadata for all texts should be stored in `data/pg/text_arrays/`.
+The script will save the generated dataset to `data/data_csv_files/`.
 
-# Extending Book-SORT
+```shell
+python sort/dataset_creation/preprocess_pg_books.py
+python sort/dataset_creation/run_booksort_creation.py 
+```
+
+## Book-SORT dataset
+As an example dataset for SORT, we created Book-SORT, which consists of 9 books that were recently added to Project Gutenberg.
+
+More information about this dataset can be found in the [`Book-SORT` dataset card](data/README.md) and on [Huggingface-Datasets](https://huggingface.co/datasets/memari/booksort), where our dataset is available and can be loaded as follows:
+```python
+ds = datasets.load_dataset("memari/booksort", "default")
+df = pd.DataFrame(ds["test"])
+```
+
+## Extending Book-SORT
 
 ## Adding a new book to Book-SORT
 Follow these steps to extend the `Book-SORT` dataset with a new book:
 1. Store the story as a text file in `data/pg/full_text`, use an number ID as the filename
 2. Add the metadata of the book to the dictionary `ch_dict` in  `sort/dataset_creation/preprocess_pg_books.py`
 3. Add the book ID to the `book_list` list 
-4. Run the dataset generation procedure describe above.
+4. Run the dataset generation procedure as described below:
 
 ## Adding a new prompt
 Creating a new prompt requires to define a `prompt_<NUM>.yaml`, where `<NUM>` should be replaced with the successor of the last prompt file in the `sort/evaluation/conf/prompts/` directory.
@@ -133,15 +101,4 @@ the data samples:
 * `<segments>`: the two segment texts 
 * `<label_list[0]>` and `<label_list[1]>`: the labels for each segment (e.g., A or B)
 
-## Adding a new model
-Evaluating a new model requires to add it to the list of models `sort/evaluation/model_paths.csv`.
-Each line in that file follows the following pattern: `<ID>,<model_name>,<model_path>`.  
-The `<model_name>` is internal to the SORT code and will be used to call the evaluation script. 
-The `<model_path>` can be an absolute path or a huggingface model hub
-directory, e.g., `mistralai/Mistral-7B-Instruct-v0.2`.
 
-If the model is an instruction-tuned model, you may want to include its jinja file in `sort/evaluation/chat_templates/`,
-and include the name of the chat template file inside the `experiment()` function in `sort/evaluation/evaluation.py`.
-
-Next, update the `config.yaml` file that will be used to evaluate the model. Make sure that the right `api` is defined, 
-and the other instructions for evaluating the model are being followed.
