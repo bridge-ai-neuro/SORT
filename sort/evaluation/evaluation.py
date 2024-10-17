@@ -4,7 +4,7 @@ import logging
 import pandas as pd
 import shutil
 import time
-from evaluation_utils import load_model_tokenizer, llm_generate, parse_for_results, calc_accuracy
+from evaluation_utils import load_model_tokenizer, llm_generate, parse_for_results, calc_accuracy, add_correctness
 import torch
 import gc
 from vllm.model_executor.parallel_utils.parallel_state import destroy_model_parallel
@@ -225,6 +225,7 @@ def experiment(cfg):
                     results_filepath = os.path.join(results_folder, f'{data_descr}_{cfg.model_name}_results.csv')
 
                     dataframe = pd.DataFrame(all_results).reset_index()
+                    dataframe = add_correctness(dataframe, cfg)
                     dataframe.to_csv(results_filepath)
                     print(f"WROTE INTERMEDIATE RESULTS TO {results_filepath}")
 
@@ -262,6 +263,7 @@ def experiment(cfg):
         results_filepath = os.path.join(results_folder, f'{data_descr}_{cfg.model_name}_results.csv')
 
         dataframe = pd.DataFrame(all_results).reset_index()
+        dataframe = add_correctness(dataframe, cfg)
         dataframe.to_csv(results_filepath)
         print(f'This file takes:\n --- {time.time() - time_file_start} seconds ---')
 
