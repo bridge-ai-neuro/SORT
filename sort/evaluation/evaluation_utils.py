@@ -8,7 +8,10 @@ import pandas as pd
 import tiktoken
 import time
 import torch
-
+def add_correctness(df, cfg):
+    df["ground_truth"] = df[f"{cfg.label_list[0]}_is_{cfg.task_type}"].apply(lambda x: [cfg.label_list[1],cfg.label_list[0]][x])
+    df["correct"] = df["ground_truth"] == df["answer"]
+    return df
 
 def load_model_tokenizer(model_path, cfg):
     print(f"Loading model: {model_path}")
