@@ -15,6 +15,11 @@ transformers
 matplotlib
 pylcs
 
-# OPTIONAL
+### OPTIONAL
 # if you want to run the included tests
 pytest
+## RAG requirements
+#langchain-core
+#langchain-community
+#sentence_transformers
+#faiss-cpu

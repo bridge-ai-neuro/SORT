@@ -1,0 +1,2 @@
+name: "rag_prompt_7.yaml"
+pre_excerpt: "Please read these search results carefully to help you perform the task. Search results: <context>"

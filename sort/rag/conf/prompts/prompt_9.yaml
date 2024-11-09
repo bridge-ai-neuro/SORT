@@ -1,0 +1,5 @@
+name: "prompt_9.yaml"
+system_prompt: "You are a helpful, respectful and honest assistant."
+pre_excerpt: "Please carefully read this excerpt from the book <booktitle>. This is the relevant passage: <excerpt>"
+post_excerpt: "You will be shown two text segments, labeled as <label_list[0]> and <label_list[1]>. Please recall in which order they appeared in the book <booktitle> and tell me which one came <tasktype>. Please read the segments carefully: <segments> Which of these two parts of the book, <label_list[0]> or <label_list[1]>, came <tasktype> in the book <booktitle>?"
+model_answer_prefix: "Answer: Segment"

@@ -1,0 +1,2 @@
+name: "rag_prompt_3.yaml"
+pre_excerpt: "Searching a book database found these relevant text snippets: <context>"

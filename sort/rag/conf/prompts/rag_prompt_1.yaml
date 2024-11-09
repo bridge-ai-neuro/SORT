@@ -1,0 +1,2 @@
+name: "rag_prompt_1.yaml"
+pre_excerpt: "The following excerpts from the book <booktitle> may be helpful context for the task. Context: <context>"
