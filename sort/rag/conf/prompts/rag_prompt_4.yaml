@@ -1,0 +1,2 @@
+name: "rag_prompt_4.yaml"
+pre_excerpt: "The following search results may be useful context: <context>"

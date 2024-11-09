@@ -1,0 +1,5 @@
+name: "prompt_6.yaml"
+system_prompt: "You are a helpful, respectful and honest assistant."
+pre_excerpt: "Please carefully read this excerpt from the book <booktitle>. This is the relevant passage: <excerpt>"
+post_excerpt: "You will be shown pairs of text fragments from <booktitle>. Please select which of two fragments appeared <tasktype> in the book. You will be shown 10 such pairs. <segments> Which fragment appeared <tasktype> in the book, <label_list[0]> or <label_list[1]>?"
+model_answer_prefix: "Answer: Segment"

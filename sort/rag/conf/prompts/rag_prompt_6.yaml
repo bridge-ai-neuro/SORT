@@ -1,0 +1,2 @@
+name: "rag_prompt_6.yaml"
+pre_excerpt: "Please read some text deemed relevant for the task before performing the task. Relevant text: <context>"
